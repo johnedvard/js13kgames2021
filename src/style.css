@@ -1,0 +1,18 @@
+body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+canvas {
+  width: 400px;
+  height: 400px;
+
+  background: #f6edcd;
+  z-index: 100;
+}

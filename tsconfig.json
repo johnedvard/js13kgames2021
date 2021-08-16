@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "module": "esnext",
+    "target": "es2018",
+    "allowJs": true,
+    "typeRoots": ["node_modules/@types"],
+    "lib": ["es2018", "dom"],
+    "allowSyntheticDefaultImports": true
+  },
+  "files": ["./kontra/kontra.d.ts"],
+  "exclude": ["node_modules", "contract", "kontra"]
+}

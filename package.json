@@ -1,0 +1,61 @@
+{
+  "name": "js13kgames-2021",
+  "sideEffects": false,
+  "version": "1.0.0",
+  "description": "Game entry for js13kgames",
+  "main": "index.ts",
+  "scripts": {
+    "start": "webpack serve",
+    "build": "webpack",
+    "build:contract": "node contract/compile.js",
+    "build:contract:debug": "node contract/compile.js --debug",
+    "dev:deploy:contract": "near dev-deploy",
+    "deploy:contract": "near deploy",
+    "test": "npm run build:contract:debug && cd contract && npm run test && cd .. && jest test --runInBand"
+  },
+  "keywords": [
+    "gamedev",
+    "gamejam"
+  ],
+  "author": "John Edvard Reiten",
+  "license": "ISC",
+  "devDependencies": {
+    "@open-wc/building-rollup": "^1.10.0",
+    "@types/html-webpack-plugin": "^3.2.6",
+    "babel-loader": "^8.2.2",
+    "copy-webpack-plugin": "^9.0.1",
+    "css-loader": "^6.2.0",
+    "css-minimizer-webpack-plugin": "^3.0.2",
+    "deepmerge": "^4.2.2",
+    "env-cmd": "^10.1.0",
+    "html-minimizer-webpack-plugin": "^3.1.1",
+    "html-webpack-plugin": "^5.3.2",
+    "jest": "^27.0.6",
+    "jest-environment-node": "^27.0.6",
+    "json-minimizer-webpack-plugin": "^3.0.0",
+    "near-cli": "^2.1.1",
+    "nodemon": "^2.0.12",
+    "path-browserify": "^1.0.1",
+    "rimraf": "^3.0.2",
+    "shelljs": "^0.8.4",
+    "style-loader": "^3.2.1",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.3.5",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^5.50.0",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "near-api-js": "^0.42.0",
+    "node-polyfill-webpack-plugin": "^1.1.4",
+    "regenerator-runtime": "^0.13.9"
+  },
+  "jest": {
+    "testEnvironment": "near-cli/test_environment",
+    "testPathIgnorePatterns": [
+      "<rootDir>/contract/",
+      "<rootDir>/node_modules/"
+    ]
+  }
+}
