@@ -26,8 +26,8 @@ class Player implements IGameObject {
     this.ctx = this.game.ctx;
     this.trail = new Trail();
     const player: any = Sprite({
-      x: 100, // starting x,y position of the sprite
-      y: 100,
+      x: this.game.canvas.width / 2, // starting x,y position of the sprite
+      y: this.game.canvas.height,
       color: 'black', // fill color of the sprite rectangle
       width: 15 * scale, // width and height of the sprite rectangle
       height: 10 * scale,
@@ -131,24 +131,21 @@ class Player implements IGameObject {
   checkLineIntersection = () => {
     let currIntersection = this.deadPoint;
     const points = [...this.trails, Vector(this.go.x, this.go.y)];
-    for (let i = 0; i < points.length - 1; i++) {
+    for (let i = 0; i < points.length - 3; i++) {
       const point = points[i];
       const point2 = points[i + 1];
-      for (let j = i + 2; j < points.length - 1; j++) {
-        const otherPoint = points[j];
-        const otherPoint2 = points[j + 1];
-        if (point !== otherPoint && point2 !== otherPoint2) {
-          const intersection = lineIntersection(
-            point,
-            point2,
-            otherPoint,
-            otherPoint2
-          );
-          if (intersection && intersection.x) {
-            currIntersection = intersection;
-            emit(GameEvent.hitTrail, { point: intersection, go: this.go });
-            break;
-          }
+      const lastPoint = points[points.length - 2];
+      const lastPoint2 = points[points.length - 1];
+      if (point !== lastPoint && point2 !== lastPoint2) {
+        const intersection = lineIntersection(
+          point,
+          point2,
+          lastPoint,
+          lastPoint2
+        );
+        if (intersection && intersection.x) {
+          currIntersection = intersection;
+          emit(GameEvent.hitTrail, { point: intersection, go: this.go });
         }
       }
       if (currIntersection) break;
