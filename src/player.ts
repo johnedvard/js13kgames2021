@@ -7,20 +7,22 @@ import { Trail } from './trail';
 import { GameEvent } from './gameEvent';
 import Vector from '../kontra/src/vector';
 import { Game } from './game';
-import { lineIntersection } from './gameUtils';
+import { isOutOfBounds, lineIntersection } from './gameUtils';
 
 class Player implements IGameObject {
   go: any;
   player2: any;
   playerState: PlayerState = PlayerState.idle;
   trail: Trail;
-  trails: any[] = [];
+  trails: any[] = []; // Points
   ctx: CanvasRenderingContext2D;
   deadPoint: any = null;
   speed: number;
+  removedSpace: any[] = []; // Points
 
   constructor(private game: Game, private scale: number) {
     this.speed = 100 * scale;
+    this.removedSpace = [];
     const _p = this;
     this.trails = [];
     this.ctx = this.game.ctx;
@@ -55,6 +57,12 @@ class Player implements IGameObject {
           this.rotation += 10 * dt;
           emit(GameEvent.playerRotation, 1);
         }
+        if (
+          _p.playerState === PlayerState.dead ||
+          _p.playerState === PlayerState.idle
+        ) {
+          this.dx = this.dy = 0;
+        }
         // move the ship forward in the direction it's facing
         this.x = this.x + this.dx * dt * Math.cos(this.rotation);
         this.y = this.y + this.dy * dt * Math.sin(this.rotation);
@@ -65,6 +73,7 @@ class Player implements IGameObject {
     on(GameEvent.playerRotation, this.onPayerRotation);
     on(GameEvent.startTrace, this.onStartTrace);
     on(GameEvent.hitTrail, this.onHitTrail);
+    on(GameEvent.hitRemovedSpace, this.onHitRemovedSpace);
 
     this.go = player;
     this.go.addChild(this.trail.go);
@@ -84,11 +93,14 @@ class Player implements IGameObject {
     // this.player2.update(dt);
     this.go.update(dt);
     this.checkLineIntersection();
+    this.checkRemovedSpaceCollision();
+    this.wallCollision();
     this.updateDeadPlayer();
   }
   render(): void {
     // this.player2.render();
     this.renderTrail();
+    this.renderRemovedSpace();
     this.go.render();
     this.renderDeadPlayer();
   }
@@ -96,16 +108,26 @@ class Player implements IGameObject {
     if (this.trails.length) {
       this.ctx.beginPath();
       this.ctx.moveTo(this.trails[0].x, this.trails[0].y);
+      this.ctx.strokeStyle = 'green'; // TODO (johnedvard) generate based on hash from Near.
       this.trails.forEach((t) => {
-        this.ctx.strokeStyle = 'green'; // TODO (johnedvard) generate based on hash from Near.
         this.ctx.lineTo(t.x, t.y);
-        this.ctx.stroke();
       });
+      this.ctx.stroke();
       if (this.playerState !== PlayerState.dead) {
         this.ctx.lineTo(this.go.x, this.go.y);
         this.ctx.stroke();
       }
     }
+  };
+  renderRemovedSpace = () => {
+    if (!this.removedSpace.length) return;
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.removedSpace[0].x, this.removedSpace[0].y);
+    this.ctx.fillStyle = 'blue'; // TODO (johnedvard) generate based on hash from Near.
+    this.removedSpace.forEach((p) => {
+      this.ctx.lineTo(p.x, p.y);
+    });
+    this.ctx.stroke();
   };
   onPayerRotation = (rotationDirection: number) => {
     if (this.playerState === PlayerState.tracing) {
@@ -121,11 +143,21 @@ class Player implements IGameObject {
   onHitTrail = ({ point, go }: { point: any; go: any }) => {
     if (go === this.go) {
       this.deadPoint = point;
-      console.log('trails', this.trails);
       this.playerState = PlayerState.dead;
-      this.go.dx = 0;
-      this.go.dy = 0;
       this.trails.push(point);
+    }
+  };
+  onHitRemovedSpace = ({ point, go }: { point: any; go: any }) => {
+    if (go === this.go) {
+      console.log('hit wall at', point);
+      this.playerState = PlayerState.idle;
+      this.removedSpace = [
+        ...this.removedSpace,
+        ...this.trails,
+        Vector(go.x, go.y),
+      ];
+      // TODO (johnedvard) push spaceship slightly out of the wall
+      this.trails = [];
     }
   };
   checkLineIntersection = () => {
@@ -149,6 +181,40 @@ class Player implements IGameObject {
         }
       }
       if (currIntersection) break;
+    }
+  };
+  checkRemovedSpaceCollision = () => {
+    if (this.trails.length < 2) return; // prevent hitting wall if the player just started moving while tracing
+    if (this.playerState === PlayerState.tracing) {
+      for (let i = 0; i < this.removedSpace.length - 1; i++) {
+        const point = this.removedSpace[i];
+        const point2 = this.removedSpace[i + 1];
+        const lastPoint = Vector(this.go.x, this.go.y);
+        const lastPoint2 = this.trails[this.trails.length - 1];
+        if (point && point2 && lastPoint && lastPoint2) {
+          const intersection = lineIntersection(
+            point,
+            point2,
+            lastPoint,
+            lastPoint2
+          );
+          if (intersection && intersection.x) {
+            console.log('trails', this.trails);
+            emit(GameEvent.hitRemovedSpace, {
+              point: intersection,
+              go: this.go,
+            });
+          }
+        }
+      }
+    }
+  };
+  wallCollision = () => {
+    if (isOutOfBounds(this.game, this.go)) {
+      emit(GameEvent.hitRemovedSpace, {
+        point: {},
+        go: this.go,
+      });
     }
   };
   updateDeadPlayer = () => {

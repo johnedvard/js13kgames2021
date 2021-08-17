@@ -1,4 +1,5 @@
 import { Vector } from '../kontra/';
+import { Game } from './game';
 
 export const lineIntersection = (
   p1: Vector,
@@ -17,4 +18,13 @@ export const lineIntersection = (
   intersection.y = p1.y + u * (p2.y - p1.y);
 
   return intersection;
+};
+
+export const isOutOfBounds = (game: Game, go: Vector) => {
+  return (
+    go.x < 0 ||
+    go.x > game.canvas.width ||
+    go.y < 0 ||
+    go.y > game.canvas.height
+  );
 };

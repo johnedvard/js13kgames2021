@@ -5,6 +5,7 @@ import { IGameObject } from './iGameobject';
 import { NearConnection } from './near/nearConnection';
 import { initLoginLogout } from './near/nearLogin';
 import { Player } from './player';
+import Vector from '../kontra/src/vector';
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -12,6 +13,7 @@ export class Game {
   x = 10;
   gos: IGameObject[] = [];
   player: Player;
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
