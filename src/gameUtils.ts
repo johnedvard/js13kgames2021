@@ -20,11 +20,15 @@ export const lineIntersection = (
   return intersection;
 };
 
+//Returns bool, whether the projected point is actually inside the (finite) line segment.
+export const isPointOnLine = (p1: any, p2: any, p3: any) => {
+  return p1.distance(p3) + p2.distance(p3) === p1.distance(p2);
+};
 export const isOutOfBounds = (game: Game, go: Vector) => {
   return (
-    go.x < 0 ||
-    go.x > game.canvas.width ||
-    go.y < 0 ||
-    go.y > game.canvas.height
+    go.x <= 0 ||
+    go.x >= game.canvas.width ||
+    go.y <= 0 ||
+    go.y >= game.canvas.height
   );
 };

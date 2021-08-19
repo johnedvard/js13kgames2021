@@ -7,7 +7,7 @@ import { Trail } from './trail';
 import { GameEvent } from './gameEvent';
 import Vector from '../kontra/src/vector';
 import { Game } from './game';
-import { isOutOfBounds, lineIntersection } from './gameUtils';
+import { isOutOfBounds, lineIntersection, isPointOnLine } from './gameUtils';
 
 class Player implements IGameObject {
   go: any;
@@ -19,6 +19,8 @@ class Player implements IGameObject {
   deadPoint: any = null;
   speed: number;
   removedSpace: any[] = []; // Points
+  intersectionPoints: any[] = [];
+  wallLineSegments: any[] = [];
 
   constructor(private game: Game, private scale: number) {
     this.speed = 100 * scale;
@@ -27,6 +29,13 @@ class Player implements IGameObject {
     this.trails = [];
     this.ctx = this.game.ctx;
     this.trail = new Trail();
+    this.wallLineSegments = [
+      Vector(0, 0),
+      Vector(this.game.canvas.width, 0),
+      Vector(this.game.canvas.width, this.game.canvas.height),
+      Vector(0, this.game.canvas.height),
+      Vector(0, 0),
+    ];
     const player: any = Sprite({
       x: this.game.canvas.width / 2, // starting x,y position of the sprite
       y: this.game.canvas.height,
@@ -74,6 +83,7 @@ class Player implements IGameObject {
     on(GameEvent.startTrace, this.onStartTrace);
     on(GameEvent.hitTrail, this.onHitTrail);
     on(GameEvent.hitRemovedSpace, this.onHitRemovedSpace);
+    on(GameEvent.hitWall, this.onHitWall);
 
     this.go = player;
     this.go.addChild(this.trail.go);
@@ -138,6 +148,15 @@ class Player implements IGameObject {
     this.go.dx = this.speed;
     this.go.dy = this.speed;
     this.playerState = PlayerState.tracing;
+    const intersectionPointStart: any = Vector(this.go.x, this.go.y);
+    intersectionPointStart.isIntersectionPoint = true;
+    if (isOutOfBounds(this.game, intersectionPointStart)) {
+      console.log('is out of bound');
+      this.insertIntoWallLines(intersectionPointStart);
+    } else {
+      // insiert into removed space trace
+    }
+    this.intersectionPoints.push(intersectionPointStart);
     this.trails.push(Vector(this.go.x, this.go.y));
   };
   onHitTrail = ({ point, go }: { point: any; go: any }) => {
@@ -149,16 +168,27 @@ class Player implements IGameObject {
   };
   onHitRemovedSpace = ({ point, go }: { point: any; go: any }) => {
     if (go === this.go) {
-      console.log('hit wall at', point);
-      this.playerState = PlayerState.idle;
-      this.removedSpace = [
-        ...this.removedSpace,
-        ...this.trails,
-        Vector(go.x, go.y),
-      ];
-      // TODO (johnedvard) push spaceship slightly out of the wall
+      this.onCommonHit({ point, go });
       this.trails = [];
     }
+  };
+  onHitWall = ({ point, go }: { point: any; go: any }) => {
+    if (go === this.go) {
+      const interSectionPointEnd = point;
+      interSectionPointEnd.isIntersectionPoint = true;
+      this.insertIntoWallLines(interSectionPointEnd);
+      this.intersectionPoints.push(interSectionPointEnd);
+      this.onCommonHit({ point, go });
+      this.trails = [];
+    }
+  };
+  onCommonHit = ({ point, go }: { point: any; go: any }) => {
+    this.playerState = PlayerState.idle;
+    this.removedSpace = [
+      ...this.removedSpace,
+      ...this.trails,
+      Vector(go.x, go.y),
+    ];
   };
   checkLineIntersection = () => {
     let currIntersection = this.deadPoint;
@@ -199,7 +229,6 @@ class Player implements IGameObject {
             lastPoint2
           );
           if (intersection && intersection.x) {
-            console.log('trails', this.trails);
             emit(GameEvent.hitRemovedSpace, {
               point: intersection,
               go: this.go,
@@ -210,9 +239,24 @@ class Player implements IGameObject {
     }
   };
   wallCollision = () => {
-    if (isOutOfBounds(this.game, this.go)) {
-      emit(GameEvent.hitRemovedSpace, {
-        point: {},
+    if (
+      this.playerState === PlayerState.tracing &&
+      isOutOfBounds(this.game, this.go)
+    ) {
+      const point: any = { x: this.go.x, y: this.go.y };
+      // clamp to wall edges
+      if (this.go.x <= 0) {
+        point.x = 0;
+      } else if (this.go.x >= this.game.canvas.width) {
+        point.x = this.game.canvas.width;
+      }
+      if (this.go.y <= 0) {
+        point.y = 0;
+      } else if (this.go.y >= this.game.canvas.height) {
+        point.y = this.game.canvas.height;
+      }
+      emit(GameEvent.hitWall, {
+        point: point,
         go: this.go,
       });
     }
@@ -241,6 +285,21 @@ class Player implements IGameObject {
       { handler: 'keyup' }
     );
   }
+  insertIntoWallLines(point: any) {
+    let insertIndex = -1;
+    // Find where to insert the point in the wall lines
+    for (let i = 0; i < this.wallLineSegments.length - 1; i++) {
+      const wallPoint1 = this.wallLineSegments[i];
+      const wallPoint2 = this.wallLineSegments[i + 1];
+      if (isPointOnLine(wallPoint1, wallPoint2, point)) {
+        insertIndex = i;
+        break;
+      }
+    }
+    if (insertIndex >= 0) {
+      this.wallLineSegments.splice(insertIndex, 0, point);
+      console.log('intersection point added to wall', this.wallLineSegments);
+    }
+  }
 }
-
 export { Player };
