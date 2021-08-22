@@ -19,6 +19,7 @@ const scoreMaps: AVLTree<string, AVLTree<string, string>> = new AVLTree<
   AVLTree<string, string>
 >('levels');
 const DEFAULT_MESSAGE = 'halla';
+const NO_NAME = 'No_Name';
 
 // Exported functions will be part of the public interface for your smart contract.
 // Feel free to extract behavior to non-exported functions!
@@ -74,4 +75,15 @@ export function getScore(levelName: string, accountId: string): string | null {
     if (score) return score.get(accountId, null);
   }
   return null;
+}
+
+export function setName(name: string): string | null {
+  const account_id = Context.sender;
+  logging.log('My name is "' + name + '", for account "' + account_id + '"');
+  storage.set(account_id + '_name', name);
+  return name;
+}
+
+export function getName(accountId: string): string | null {
+  return storage.get<string>(accountId + '_name', NO_NAME);
 }

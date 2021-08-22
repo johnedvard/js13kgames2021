@@ -1,33 +1,34 @@
-import { Vector } from '../kontra/';
+import { Vector, Sprite } from '../kontra/kontra';
+import { emit } from '../kontra/src/events';
+import KontraVector from '../kontra/src/vector';
 import { Game } from './game';
-import { IntersectionNode } from './intersectionNode';
+import { GameEvent } from './gameEvent';
 
 export const lineIntersection = (
   p1: Vector,
   p2: Vector,
   p3: Vector,
   p4: Vector
-) => {
+): Vector => {
   const d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
-  if (d == 0) return {}; // parallel lines
+  if (d == 0) return null; // parallel lines
   const u = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d;
   const v = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d;
-  if (u < 0.0 || u > 1.0) return {}; // intersection point not between p1 and p2
-  if (v < 0.0 || v > 1.0) return {}; // intersection point not between p3 and p4
-  let intersection: any = {};
-  intersection.x = p1.x + u * (p2.x - p1.x);
-  intersection.y = p1.y + u * (p2.y - p1.y);
-
+  if (u < 0.0 || u > 1.0) return null; // intersection point not between p1 and p2
+  if (v < 0.0 || v > 1.0) return null; // intersection point not between p3 and p4
+  const intersectionX = p1.x + u * (p2.x - p1.x);
+  const intersectionY = p1.y + u * (p2.y - p1.y);
+  let intersection: Vector = KontraVector(intersectionX, intersectionY);
   return intersection;
 };
 
 //Returns bool, whether the projected point is actually inside the (finite) line segment.
-export const isPointOnLine = (p1: any, p2: any, p3: any) => {
+export const isPointOnLine = (p1: Vector, p2: Vector, p3: Vector): boolean => {
   if (p1.distance && p2.distance && p3.distance)
     return p1.distance(p3) + p2.distance(p3) === p1.distance(p2);
   return false;
 };
-export const isOutOfBounds = (game: Game, go: Vector) => {
+export const isOutOfBounds = (game: Game, go: Sprite): boolean => {
   return (
     go.x <= 0 ||
     go.x >= game.canvas.width ||
@@ -37,32 +38,27 @@ export const isOutOfBounds = (game: Game, go: Vector) => {
 };
 
 /**
- * Assume that we find the smallest area once we have the shortest closest link.
- * From the perspective of the intersectionNode, we can do a breadth first search on the tree to find the same endIntersectionPoint.
- * Start with the node's parent, and only check children from there
- * While traversing, we also return the enclosing path which will be used to color the area.
+ * Check if player hits own trail
  */
-export const findEndpointNode = (
-  interSectionNode: IntersectionNode,
-  endPoint: any
-) => {
-  const nodesMet: IntersectionNode[] = [];
-  const queue: IntersectionNode[] = [];
-  nodesMet.push(interSectionNode.parent);
-  queue.push(interSectionNode.parent);
-  let foundEndpointNode = null;
-  while (queue.length > 0 && !foundEndpointNode) {
-    let currNode: IntersectionNode = queue.splice(0, 1)[0];
-    const newNodes = currNode.children.filter(
-      (node) => !nodesMet.includes(node)
-    );
-    queue.push(...newNodes);
-    if (currNode.parent && !nodesMet.includes(currNode.parent)) {
-      queue.push(currNode.parent);
-    }
-    if (currNode.endPoint === endPoint || currNode.startPoint === endPoint) {
-      foundEndpointNode = currNode;
+export const checkLineIntersection = (trails: any[], go: any): Vector => {
+  // TODO (johnedvard) move to another file
+  const points = [...trails, KontraVector(go.x, go.y)];
+  for (let i = 0; i < points.length - 3; i++) {
+    const point = points[i];
+    const point2 = points[i + 1];
+    const lastPoint = points[points.length - 2];
+    const lastPoint2 = points[points.length - 1];
+    if (point !== lastPoint && point2 !== lastPoint2) {
+      const intersection = lineIntersection(
+        point,
+        point2,
+        lastPoint,
+        lastPoint2
+      );
+      if (intersection) {
+        emit(GameEvent.hitTrail, { point: intersection, go });
+        return intersection;
+      }
     }
   }
-  return foundEndpointNode;
 };

@@ -27,9 +27,9 @@ export class NearConnection {
       this.nearConfig.contractName,
       {
         // View methods are read only. They don't modify the state, but usually return some value.
-        viewMethods: ['getScores', 'getScore'],
+        viewMethods: ['getScores', 'getScore', 'getName'],
         // Change methods can modify the state. But you don't receive the returned value when called.
-        changeMethods: ['setGreeting', 'setScore'],
+        changeMethods: ['setGreeting', 'setScore', 'setName'],
       }
     );
 
@@ -48,21 +48,31 @@ export class NearConnection {
     this.walletConnection.requestSignIn(this.nearConfig.contractName);
   }
 
-  setScore = (levelName: string, score: string, name: string): Promise<any> => {
+  setScore(levelName: string, score: string, name: string): Promise<any> {
     const json = JSON.stringify({ score, name });
     return (<any>this.contract).setScore({
       levelName,
       json,
     });
-  };
+  }
 
-  getScores = (levelName: string) => {
+  getScores(levelName: string) {
     const scoreBoard = (<any>this.contract).getScores({ levelName });
     return scoreBoard;
-  };
+  }
 
-  getScore = (levelName: string) => {
+  getScore(levelName: string): Promise<any> {
     const accountId = this.accountId;
     return (<any>this.contract).getScore({ levelName, accountId });
-  };
+  }
+
+  setName(name: string) {
+    const newName = (<any>this.contract).setName({ name });
+    return newName;
+  }
+
+  getName(): Promise<any> {
+    const accountId = this.accountId;
+    return (<any>this.contract).getName({ accountId });
+  }
 }

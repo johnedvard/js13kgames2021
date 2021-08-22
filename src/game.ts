@@ -5,7 +5,6 @@ import { IGameObject } from './iGameobject';
 import { NearConnection } from './near/nearConnection';
 import { initLoginLogout } from './near/nearLogin';
 import { Player } from './player';
-import Vector from '../kontra/src/vector';
 
 export class Game {
   canvas: HTMLCanvasElement;
