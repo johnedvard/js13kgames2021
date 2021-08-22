@@ -22,6 +22,7 @@
   "devDependencies": {
     "@open-wc/building-rollup": "^1.10.0",
     "@types/html-webpack-plugin": "^3.2.6",
+    "@types/jasmine": "^3.8.2",
     "babel-loader": "^8.2.2",
     "copy-webpack-plugin": "^9.0.1",
     "css-loader": "^6.2.0",
@@ -30,9 +31,13 @@
     "env-cmd": "^10.1.0",
     "html-minimizer-webpack-plugin": "^3.1.1",
     "html-webpack-plugin": "^5.3.2",
+    "jasmine": "^3.9.0",
+    "jasmine-spec-reporter": "^7.0.0",
+    "jasmine-ts": "^0.4.0",
     "jest": "^27.0.6",
     "jest-environment-node": "^27.0.6",
     "json-minimizer-webpack-plugin": "^3.0.0",
+    "latest": "^0.2.0",
     "near-cli": "^2.1.1",
     "nodemon": "^2.0.12",
     "path-browserify": "^1.0.1",
@@ -40,6 +45,7 @@
     "shelljs": "^0.8.4",
     "style-loader": "^3.2.1",
     "ts-loader": "^9.2.5",
+    "ts-node": "^10.2.1",
     "typescript": "^4.3.5",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^5.50.0",
@@ -52,7 +58,6 @@
     "regenerator-runtime": "^0.13.9"
   },
   "jest": {
-    "testEnvironment": "near-cli/test_environment",
     "testPathIgnorePatterns": [
       "<rootDir>/contract/",
       "<rootDir>/node_modules/"

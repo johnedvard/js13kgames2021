@@ -3,17 +3,21 @@ import { keyPressed, bindKeys } from './../kontra/src/keyboard';
 import { IGameObject } from './iGameobject';
 import { PlayerState } from './playerState';
 import { emit, on } from '../kontra/src/events';
-import { Trail } from './trail';
 import { GameEvent } from './gameEvent';
 import Vector from '../kontra/src/vector';
 import { Game } from './game';
-import { isOutOfBounds, lineIntersection, isPointOnLine } from './gameUtils';
+import {
+  isOutOfBounds,
+  lineIntersection,
+  isPointOnLine,
+  findEndpointNode,
+} from './gameUtils';
+import { IntersectionNode } from './intersectionNode';
 
 class Player implements IGameObject {
   go: any;
   player2: any;
   playerState: PlayerState = PlayerState.idle;
-  trail: Trail;
   trails: any[] = []; // Points
   ctx: CanvasRenderingContext2D;
   deadPoint: any = null;
@@ -21,6 +25,9 @@ class Player implements IGameObject {
   removedSpace: any[] = []; // Points
   intersectionPoints: any[] = [];
   wallLineSegments: any[] = [];
+  currStartPoint: any = null; // IntersectionPoint
+  currEndPoint: any = null; // IntersectionPoint
+  wallNode: IntersectionNode; // root node
 
   constructor(private game: Game, private scale: number) {
     this.speed = 100 * scale;
@@ -28,7 +35,7 @@ class Player implements IGameObject {
     const _p = this;
     this.trails = [];
     this.ctx = this.game.ctx;
-    this.trail = new Trail();
+    this.wallNode = new IntersectionNode();
     this.wallLineSegments = [
       Vector(0, 0),
       Vector(this.game.canvas.width, 0),
@@ -86,7 +93,6 @@ class Player implements IGameObject {
     on(GameEvent.hitWall, this.onHitWall);
 
     this.go = player;
-    this.go.addChild(this.trail.go);
     // this.player2 = Sprite({
     //   x: 100, // starting x,y position of the sprite
     //   y: 100,
@@ -149,7 +155,9 @@ class Player implements IGameObject {
     this.go.dy = this.speed;
     this.playerState = PlayerState.tracing;
     const intersectionPointStart: any = Vector(this.go.x, this.go.y);
-    intersectionPointStart.isIntersectionPoint = true;
+    // intersectionPointStart.isIntersectionPoint = true;
+    this.currStartPoint = intersectionPointStart;
+
     if (isOutOfBounds(this.game, intersectionPointStart)) {
       console.log('is out of bound');
       this.insertIntoWallLines(intersectionPointStart);
@@ -169,26 +177,39 @@ class Player implements IGameObject {
   onHitRemovedSpace = ({ point, go }: { point: any; go: any }) => {
     if (go === this.go) {
       this.onCommonHit({ point, go });
-      this.trails = [];
+      // TODO add to trace lines
     }
   };
   onHitWall = ({ point, go }: { point: any; go: any }) => {
     if (go === this.go) {
-      const interSectionPointEnd = point;
-      interSectionPointEnd.isIntersectionPoint = true;
-      this.insertIntoWallLines(interSectionPointEnd);
-      this.intersectionPoints.push(interSectionPointEnd);
       this.onCommonHit({ point, go });
-      this.trails = [];
+      this.insertIntoWallLines(point);
     }
   };
   onCommonHit = ({ point, go }: { point: any; go: any }) => {
+    // point.isIntersectionPoint = true;
+    this.intersectionPoints.push(point);
+    this.currEndPoint = point;
     this.playerState = PlayerState.idle;
     this.removedSpace = [
       ...this.removedSpace,
       ...this.trails,
       Vector(go.x, go.y),
     ];
+    const intersectinoNode = this.createIntersectionNode(
+      this.currStartPoint,
+      this.currEndPoint,
+      this.wallNode,
+      this.trails
+    );
+    this.trails = [];
+    const foundOtherNode = findEndpointNode(
+      intersectinoNode,
+      this.currEndPoint
+    );
+    console.log('foundOtherNode', foundOtherNode);
+    console.log('intersectinoNode', intersectinoNode);
+    this.findCommoneAncestor(intersectinoNode, foundOtherNode);
   };
   checkLineIntersection = () => {
     let currIntersection = this.deadPoint;
@@ -300,6 +321,49 @@ class Player implements IGameObject {
       this.wallLineSegments.splice(insertIndex, 0, point);
       console.log('intersection point added to wall', this.wallLineSegments);
     }
+  }
+
+  // create an array from left leaf node to root node. Compare acnestors of right leaf node with left array
+  findCommoneAncestor(startNode: IntersectionNode, endNode: IntersectionNode) {
+    let startArr: IntersectionNode[] = [];
+    let endArr: IntersectionNode[] = [];
+    const createArrayFromLeafNode = (
+      node: IntersectionNode,
+      res: IntersectionNode[] = []
+    ): IntersectionNode[] => {
+      if (node.parent) {
+        return createArrayFromLeafNode(node.parent, [...res, node]);
+      } else {
+        return [...res, node];
+      }
+    };
+    startArr = [...createArrayFromLeafNode(startNode)];
+    endArr = [...createArrayFromLeafNode(endNode)];
+    console.log('start', startArr);
+    console.log('end', endArr);
+    startArr.forEach((s, i) => {
+      endArr.forEach((e, j) => {
+        if (s === e) {
+          console.log('found common ancester', s, i, j);
+          // TODO get all nodes from 0 to i and 0 to j, and start building a new trace to fill.
+        }
+      });
+    });
+  }
+  createIntersectionNode(
+    startPoint: any,
+    endPoint: any,
+    parent: IntersectionNode,
+    trails: any[]
+  ): IntersectionNode {
+    const interSectionNode: IntersectionNode = new IntersectionNode(
+      startPoint,
+      endPoint,
+      parent,
+      trails
+    );
+    parent.children.push(interSectionNode);
+    return interSectionNode;
   }
 }
 export { Player };
