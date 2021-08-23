@@ -4,4 +4,5 @@ export enum GameEvent {
   hitTrail = 'ht',
   hitRemovedSpace = 'hrs',
   hitWall = 'hw',
+  startGame = 'sg',
 }

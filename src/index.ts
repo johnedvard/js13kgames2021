@@ -31,9 +31,10 @@ const monetizeExample = (bodyEl: HTMLElement) => {
 
 function init() {
   const bodyEl: HTMLElement = document.getElementsByTagName('body')[0];
-  const gameEl: HTMLCanvasElement = document.createElement('canvas');
-  gameEl.setAttribute('id', 'game');
-  bodyEl.appendChild(gameEl);
+  const gameEl: HTMLCanvasElement = <HTMLCanvasElement>(
+    document.getElementById('game')
+  );
+
   monetizeExample(bodyEl);
   new Game(gameEl);
 }

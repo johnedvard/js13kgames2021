@@ -1,3 +1,10 @@
+:root {
+  --text: #322623;
+  --err: #7b505c;
+  --ascent: #9b9880;
+  --bg: #e4d6cf;
+}
+
 body {
   width: 100vw;
   height: 100vh;
@@ -9,10 +16,43 @@ body {
   align-items: center;
   overflow: hidden;
 }
-canvas {
+#root {
+  position: relative;
   width: 400px;
   height: 400px;
-
-  background: #f6edcd;
-  z-index: 100;
+  background: var(--bg);
+  overflow: hidden;
+}
+#game,
+#menu {
+  width: 100%;
+  height: 100%;
+}
+#menu {
+  position: absolute;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+#menu.out {
+  transform: translate(0, 200%);
+  transition: transform 1s ease-out;
+}
+span,
+button,
+input {
+  width: 80%;
+}
+#desc,
+input,
+button {
+  margin-top: 20px;
+}
+button {
+  height: 30px;
+  border-radius: 5px;
+  border-color: var(--text);
+}
+#loginout {
+  margin-top: 170px;
 }

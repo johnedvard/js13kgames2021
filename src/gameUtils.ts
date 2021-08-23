@@ -62,3 +62,19 @@ export const checkLineIntersection = (trails: any[], go: any): Vector => {
     }
   }
 };
+
+export const createColorFromName = (name: string) => {
+  let color = '000000';
+  for (let i = 0; i < name.length; i++) {
+    try {
+      const deciNum = parseInt(name[i], 36) || 0;
+      const hexNum = parseInt(color[i % 6], 16);
+      const hexStr = color[i % 6];
+      const newHexStr = ((hexNum + deciNum) % 16).toString(16);
+      color = color.replace(hexStr, newHexStr);
+    } catch {
+      // Nothing
+    }
+  }
+  return color;
+};
