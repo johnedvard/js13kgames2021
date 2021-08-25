@@ -1,5 +1,4 @@
-import KontraSprite from './../kontra/src/sprite';
-import { keyPressed, bindKeys } from './../kontra/src/keyboard';
+import { bindKeys } from './../kontra/src/keyboard';
 import { IGameObject } from './iGameobject';
 import { PlayerState } from './playerState';
 import { emit, on } from '../kontra/src/events';
@@ -12,9 +11,11 @@ import {
   lineIntersection,
 } from './gameUtils';
 import { Vector, Sprite } from '../kontra/kontra';
+import { SpaceShip } from './spaceShip';
 
 class Player implements IGameObject {
   go: Sprite;
+  spaceShip: SpaceShip;
   playerState: PlayerState = PlayerState.idle;
   trails: Vector[] = []; // Points
   ctx: CanvasRenderingContext2D;
@@ -22,10 +23,13 @@ class Player implements IGameObject {
   removedSpace: Vector[] = []; // Points
   wallLineSegments: Vector[] = [];
 
-  constructor(private game: Game, private scale: number) {
-    this.speed = 100 * scale;
+  constructor(
+    private game: Game,
+    private scale: number,
+    private playerProps: { color: string }
+  ) {
+    this.speed = 100 * this.scale;
     this.removedSpace = [];
-    const _p = this;
     this.trails = [];
     this.ctx = this.game.ctx;
     this.wallLineSegments = [
@@ -35,48 +39,16 @@ class Player implements IGameObject {
       KontraVector(0, this.game.canvas.height),
       KontraVector(0, 0),
     ];
-    const player: any = KontraSprite({
-      x: this.game.canvas.width / 2, // starting x,y position of the sprite
+    const spriteProps = {
+      x: this.game.canvas.width / 2,
       y: this.game.canvas.height,
-      color: 'black', // fill color of the sprite rectangle
-      width: 15 * scale, // width and height of the sprite rectangle
-      height: 10 * scale,
-      dx: 0,
-      anchor: { x: 0.1, y: 0.5 },
-      rotation: Math.PI * 4,
-      render: function () {
-        // render triangle
-        if (_p.playerState !== PlayerState.dead) {
-          this.context.fillStyle = this.color;
-          this.context.beginPath();
-          this.context.lineCap = 'round';
-          this.context.moveTo(0, 0); // top left corner
-          this.context.lineTo(this.width, this.height / 2); // bottom
-          this.context.lineTo(0, this.height); // top right corner
-          this.context.fill();
-        }
-      },
-      update: function (dt: number) {
-        if (keyPressed('left')) {
-          this.rotation -= 10 * dt;
-          emit(GameEvent.playerRotation, -1);
-        }
-        if (keyPressed('right')) {
-          this.rotation += 10 * dt;
-          emit(GameEvent.playerRotation, 1);
-        }
-        if (
-          _p.playerState === PlayerState.dead ||
-          _p.playerState === PlayerState.idle
-        ) {
-          this.dx = this.dy = 0;
-        }
-        // move the ship forward in the direction it's facing
-        this.x = this.x + this.dx * dt * Math.cos(this.rotation);
-        this.y = this.y + this.dy * dt * Math.sin(this.rotation);
-      },
+      color: this.playerProps.color || '#000',
+    };
+    this.spaceShip = new SpaceShip(this.game, this.playerState, {
+      scale: this.scale,
+      spriteProps,
+      isPreview: false,
     });
-    this.handleInput();
 
     on(GameEvent.playerRotation, this.onPayerRotation);
     on(GameEvent.startTrace, this.onStartTrace);
@@ -84,7 +56,7 @@ class Player implements IGameObject {
     on(GameEvent.hitRemovedSpace, this.onHitRemovedSpace);
     on(GameEvent.hitWall, this.onHitWall);
 
-    this.go = player;
+    this.go = this.spaceShip.sprite;
   }
   update(dt: number): void {
     this.go.update(dt);
@@ -103,7 +75,7 @@ class Player implements IGameObject {
     if (this.trails.length) {
       this.ctx.beginPath();
       this.ctx.moveTo(this.trails[0].x, this.trails[0].y);
-      this.ctx.strokeStyle = 'green'; // TODO (johnedvard) generate based on hash from Near.
+      this.ctx.strokeStyle = this.playerProps.color || '#000'; // TODO (johnedvard) generate based on hash from Near.
       this.trails.forEach((t) => {
         this.ctx.lineTo(t.x, t.y);
       });
@@ -132,12 +104,12 @@ class Player implements IGameObject {
   onStartTrace = () => {
     this.go.dx = this.speed;
     this.go.dy = this.speed;
-    this.playerState = PlayerState.tracing;
+    this.setPlayerState(PlayerState.tracing);
     this.trails.push(KontraVector(this.go.x, this.go.y));
   };
   onHitTrail = ({ point, go }: { point: Vector; go: Sprite }) => {
     if (go === this.go) {
-      this.playerState = PlayerState.dead;
+      this.setPlayerState(PlayerState.dead);
       this.trails.push(point);
     }
   };
@@ -149,12 +121,12 @@ class Player implements IGameObject {
   onHitWall = ({ point, go }: { point: Vector; go: Sprite }) => {
     if (go === this.go) {
       this.onCommonHit({ point, go });
-      this.playerState = PlayerState.dead;
+      this.setPlayerState(PlayerState.dead);
       this.trails.push(point);
     }
   };
   onCommonHit = ({ point, go }: { point: Vector; go: Sprite }) => {
-    this.playerState = PlayerState.idle;
+    this.setPlayerState(PlayerState.idle);
     this.removedSpace = [
       ...this.removedSpace,
       ...this.trails,
@@ -210,19 +182,9 @@ class Player implements IGameObject {
       // TODO create something nice
     }
   };
-  handleInput() {
-    bindKeys(
-      'space',
-      (e) => {
-        if (
-          this.playerState !== PlayerState.tracing &&
-          this.playerState !== PlayerState.dead
-        ) {
-          emit(GameEvent.startTrace);
-        }
-      },
-      { handler: 'keyup' }
-    );
+  setPlayerState(state: PlayerState) {
+    this.playerState = state;
+    emit(GameEvent.playerStateChange, { state, ship: this.spaceShip });
   }
 }
 export { Player };

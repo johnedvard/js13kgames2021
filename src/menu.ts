@@ -5,41 +5,37 @@ import { Sprite } from '../kontra/kontra';
 import { emit } from '../kontra/src/events';
 import { createColorFromName } from './gameUtils';
 import { GameEvent } from './gameEvent';
+import { SpaceShip } from './spaceShip';
+import { PlayerState } from './playerState';
 
 export class Menu implements IGameObject {
   go: Sprite;
   menuEl: HTMLElement;
+  userName: string;
   constructor(private game: Game, scale = 1) {
-    const menuPlayer: any = KontraSprite({
+    const spriteProps = {
       x: this.game.canvas.width / 2, // starting x,y position of the sprite
       y: 300,
-      color: 'black', // fill color of the sprite rectangle
-      width: 15 * scale, // width and height of the sprite rectangle
-      height: 10 * scale,
-      dx: 0,
-      anchor: { x: 0.1, y: 0.5 },
-      rotation: Math.PI * 4,
-      render: function () {
-        // render triangle
-        this.context.fillStyle = this.color;
-        this.context.beginPath();
-        this.context.lineCap = 'round';
-        this.context.moveTo(0, 0); // top left corner
-        this.context.lineTo(this.width, this.height / 2); // bottom
-        this.context.lineTo(0, this.height); // top right corner
-        this.context.fill();
-      },
-      update: function (dt: number) {},
+    };
+    const spaceShip = new SpaceShip(this.game, PlayerState.idle, {
+      scale,
+      spriteProps,
+      isPreview: true,
     });
-    this.go = menuPlayer;
+    this.go = spaceShip.sprite;
     this.menuEl = document.getElementById('menu');
 
     const nameEl = document.getElementById('name');
     nameEl.addEventListener('keyup', (ev) => this.nameChange(ev));
+    this.setUserName(nameEl);
+
     const startgameEl = document.getElementById('startgame');
     startgameEl.addEventListener('click', (ev) => {
-      emit(GameEvent.startGame, {});
-      this.menuEl.classList.add('out');
+      this.game.nearConnection.ready.then(() => {
+        this.game.nearConnection.setName(this.userName);
+        emit(GameEvent.startGame, {});
+        this.menuEl.classList.add('out');
+      });
     });
   }
   update(dt: number): void {
@@ -49,7 +45,16 @@ export class Menu implements IGameObject {
     this.go.render();
   }
   nameChange(event: any) {
-    console.log(event);
-    this.go.color = '#' + createColorFromName(event.target.value);
+    this.userName = event.target.value;
+    this.setColorFromName(this.userName);
+  }
+  setColorFromName(name: string) {
+    this.go.color = '#' + createColorFromName(name);
+  }
+  async setUserName(nameEl: HTMLElement) {
+    await this.game.nearConnection.ready;
+    this.userName = await this.game.nearConnection.getName();
+    nameEl.setAttribute('value', this.userName);
+    this.setColorFromName(this.userName);
   }
 }

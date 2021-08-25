@@ -5,4 +5,5 @@ export enum GameEvent {
   hitRemovedSpace = 'hrs',
   hitWall = 'hw',
   startGame = 'sg',
+  playerStateChange = 'psc',
 }

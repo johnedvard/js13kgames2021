@@ -23,12 +23,7 @@ export const initLoginLogout = (nearConnection: NearConnection) => {
   ) {
     loginoutEl.innerHTML = 'Logout from NEAR wallet';
     nearConnection.getName().then((res) => {
-      console.log(res);
-      if (res && res.match(/[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/g)) {
-        console.log('invalid name');
-      } else {
-        loginoutEl.innerHTML = `Logout from NEAR wallet`;
-      }
+      loginoutEl.innerHTML = `Logout from NEAR wallet`;
     });
   } else {
     loginoutEl.innerHTML = 'Login to NEAR wallet';

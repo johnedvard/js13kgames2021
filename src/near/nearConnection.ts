@@ -5,8 +5,15 @@ export class NearConnection {
   walletConnection: WalletConnection;
   contract: Contract;
   accountId: string;
+  private userName: string;
+  ready: Promise<void>;
   nearConfig = getConfig('development');
-  constructor() {}
+  resolveContract: (value: void | PromiseLike<void>) => void;
+  constructor() {
+    this.ready = new Promise((resolve, reject) => {
+      this.resolveContract = resolve;
+    });
+  }
 
   // Initialize contract & set global variables
   async initContract() {
@@ -32,6 +39,7 @@ export class NearConnection {
         changeMethods: ['setGreeting', 'setScore', 'setName'],
       }
     );
+    this.resolveContract();
 
     return this.walletConnection;
   }
@@ -66,13 +74,34 @@ export class NearConnection {
     return (<any>this.contract).getScore({ levelName, accountId });
   }
 
-  setName(name: string) {
-    const newName = (<any>this.contract).setName({ name });
-    return newName;
+  setName(name: string): Promise<void> {
+    console.log('set username', name);
+    if (
+      name &&
+      name != this.userName &&
+      this.walletConnection &&
+      this.walletConnection.isSignedIn()
+    ) {
+      this.userName = name;
+      return (<any>this.contract).setName({ name });
+    }
+    return Promise.resolve();
   }
 
-  getName(): Promise<any> {
+  async getName(): Promise<any> {
+    if (this.userName) {
+      return Promise.resolve(this.userName);
+    }
+    console.log('this.contract ', this.contract);
     const accountId = this.accountId;
-    return (<any>this.contract).getName({ accountId });
+    return (<any>this.contract).getName({ accountId }).then((res: string) => {
+      console.log('get name', res);
+      if (res && res.match(/[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/g)) {
+        this.userName = 'Invalid username';
+      } else {
+        this.userName = res;
+      }
+      return res;
+    });
   }
 }

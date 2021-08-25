@@ -8,6 +8,7 @@ import { Player } from './player';
 import { Menu } from './menu';
 import { on } from '../kontra/src/events';
 import { GameEvent } from './gameEvent';
+import { createColorFromName } from './gameUtils';
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -16,18 +17,18 @@ export class Game {
   gos: IGameObject[] = [];
   player: Player;
   menu: Menu;
-
+  scale: number;
+  nearConnection: NearConnection;
   constructor(canvas: HTMLCanvasElement) {
+    this.initNear();
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    const scale = 2;
-    canvas.width = 400 * scale;
-    canvas.height = 400 * scale;
+    this.scale = 2;
+    canvas.width = 400 * this.scale;
+    canvas.height = 400 * this.scale;
     init(canvas);
     initKeys();
-    this.player = new Player(this, scale);
-    this.menu = new Menu(this, scale);
-    this.initNear();
+    this.menu = new Menu(this, this.scale);
     this.initLoop();
     on(GameEvent.startGame, () => this.onStartGame());
   }
@@ -48,13 +49,18 @@ export class Game {
 
   initNear() {
     const nearConnection = new NearConnection();
+    this.nearConnection = nearConnection;
     nearConnection.initContract().then((res) => {
       initLoginLogout(nearConnection);
     });
   }
-  onStartGame() {
+  async onStartGame() {
     if (this.gos.includes(this.menu)) {
       this.gos.splice(this.gos.indexOf(this.menu), 1);
+      const userName = await this.nearConnection.getName();
+      this.player = new Player(this, this.scale, {
+        color: '#' + createColorFromName(userName),
+      });
       this.gos.push(this.player);
     }
   }
