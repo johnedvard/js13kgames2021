@@ -7,6 +7,7 @@
   "scripts": {
     "start": "webpack serve",
     "build": "webpack",
+    "build:kontra": "npm --prefix ./kontra/ run build",
     "near:login": "near login",
     "build:contract": "node contract/compile.js",
     "build:contract:debug": "node contract/compile.js --debug",
