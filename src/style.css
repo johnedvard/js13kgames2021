@@ -18,8 +18,6 @@ body {
 }
 #root {
   position: relative;
-  width: 400px;
-  height: 400px;
   background: var(--bg);
   overflow: hidden;
 }
@@ -36,7 +34,10 @@ body {
 }
 #menu.out {
   transform: translate(0, 200%);
-  transition: transform 1s ease-out;
+  transition: transform 1s cubic-bezier(1, 1.2, 0, 1);
+}
+#menu.in {
+  transition: transform 1s cubic-bezier(1, 1.2, 0, 1);
 }
 span,
 button,

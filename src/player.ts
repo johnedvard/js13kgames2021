@@ -1,4 +1,3 @@
-import { bindKeys } from './../kontra/src/keyboard';
 import { IGameObject } from './iGameobject';
 import { PlayerState } from './playerState';
 import { emit, on } from '../kontra/src/events';
@@ -26,7 +25,7 @@ class Player implements IGameObject {
   constructor(
     private game: Game,
     private scale: number,
-    private playerProps: { color: string }
+    private playerProps: { color: string; isAi: boolean }
   ) {
     this.speed = 100 * this.scale;
     this.removedSpace = [];
@@ -73,6 +72,7 @@ class Player implements IGameObject {
   }
   renderTrail = () => {
     if (this.trails.length) {
+      this.ctx.lineWidth = 3 * this.scale;
       this.ctx.beginPath();
       this.ctx.moveTo(this.trails[0].x, this.trails[0].y);
       this.ctx.strokeStyle = this.playerProps.color || '#000'; // TODO (johnedvard) generate based on hash from Near.

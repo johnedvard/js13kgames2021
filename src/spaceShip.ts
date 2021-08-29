@@ -8,11 +8,21 @@ import { PlayerState } from './playerState';
 
 export class SpaceShip {
   sprite: Sprite;
+  rightKey = 'right';
+  leftKey = 'left';
   constructor(
     private game: Game,
     private playerState: PlayerState,
-    props: { scale: number; spriteProps: any; isPreview: boolean }
+    props: {
+      scale: number;
+      spriteProps: any;
+      isPreview: boolean;
+      leftKey?: string;
+      rightKey?: string;
+    }
   ) {
+    this.rightKey = props.rightKey || this.rightKey;
+    this.leftKey = props.leftKey || this.leftKey;
     const spaceShip = this;
     const ship: any = KontraSprite({
       x: props.spriteProps.x,
@@ -22,7 +32,7 @@ export class SpaceShip {
       height: 10 * props.scale,
       dx: 0,
       anchor: { x: 0.1, y: 0.5 },
-      rotation: Math.PI * 4,
+      rotation: -Math.PI / 2,
       render: function () {
         // render triangle
         if (spaceShip.playerState !== PlayerState.dead) {
@@ -36,11 +46,11 @@ export class SpaceShip {
         }
       },
       update: function (dt: number) {
-        if (keyPressed('left')) {
+        if (keyPressed(spaceShip.leftKey)) {
           this.rotation -= 10 * dt;
           emit(GameEvent.playerRotation, -1);
         }
-        if (keyPressed('right')) {
+        if (keyPressed(spaceShip.rightKey)) {
           this.rotation += 10 * dt;
           emit(GameEvent.playerRotation, 1);
         }
