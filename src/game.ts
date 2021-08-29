@@ -18,21 +18,22 @@ export class Game {
   player: Player;
   menu: Menu;
   scale: number;
+  canvasWidth = 800;
+  canvasHeight = 600;
   nearConnection: NearConnection;
   constructor(canvas: HTMLCanvasElement) {
     this.initNear();
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.scale = 2;
-    canvas.width = 400 * this.scale;
-    canvas.height = 400 * this.scale;
+    canvas.width = this.canvasWidth * this.scale;
+    canvas.height = this.canvasHeight * this.scale;
     init(canvas);
     initKeys();
     this.menu = new Menu(this, this.scale);
     this.initLoop();
     on(GameEvent.startGame, () => this.onStartGame());
   }
-
   initLoop() {
     this.gos.push(this.menu);
 
@@ -60,6 +61,7 @@ export class Game {
       const userName = await this.nearConnection.getName();
       this.player = new Player(this, this.scale, {
         color: '#' + createColorFromName(userName),
+        isAi: false,
       });
       this.gos.push(this.player);
     }

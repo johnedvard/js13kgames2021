@@ -7,18 +7,19 @@ import { createColorFromName } from './gameUtils';
 import { GameEvent } from './gameEvent';
 import { SpaceShip } from './spaceShip';
 import { PlayerState } from './playerState';
+import { bindKeys } from '../kontra/src/keyboard';
 
 export class Menu implements IGameObject {
   go: Sprite;
   menuEl: HTMLElement;
   userName: string;
-  constructor(private game: Game, scale = 1) {
+  constructor(private game: Game, scale: number) {
     const spriteProps = {
       x: this.game.canvas.width / 2, // starting x,y position of the sprite
-      y: 300,
+      y: window.innerHeight / 2,
     };
     const spaceShip = new SpaceShip(this.game, PlayerState.idle, {
-      scale,
+      scale: scale || 1,
       spriteProps,
       isPreview: true,
     });
@@ -37,6 +38,25 @@ export class Menu implements IGameObject {
         this.menuEl.classList.add('out');
       });
     });
+    this.handleInput();
+  }
+  handleInput() {
+    bindKeys(
+      'm',
+      (e) => {
+        this.toggleMenu();
+      },
+      { handler: 'keyup' }
+    );
+  }
+  toggleMenu() {
+    if (this.menuEl.classList.contains('out')) {
+      this.menuEl.classList.add('in');
+      this.menuEl.classList.remove('out');
+    } else {
+      this.menuEl.classList.add('out');
+      this.menuEl.classList.remove('in');
+    }
   }
   update(dt: number): void {
     this.go.update(dt);
