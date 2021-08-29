@@ -13,7 +13,7 @@
     "build:contract:debug": "node contract/compile.js --debug",
     "dev:deploy:contract": "near dev-deploy",
     "deploy:contract": "near deploy",
-    "releaser:minor": "standard-version release --release-as minor",
+    "release:minor": "standard-version release --release-as minor --dry-run",
     "test": "npm run build:contract:debug && cd contract && npm run test && cd .. && jest test --runInBand"
   },
   "keywords": [
