@@ -1,35 +1,27 @@
+import { emit } from '../kontra/src/events';
 import { Game } from './game';
+import { MonetizeEvent } from './monetizeEvent';
 
-const monetizeExample = (bodyEl: HTMLElement) => {
-  let totalSupport = 0;
-  const monetizationprogress = (res: any) => {
-    if (res) {
-      const detail: { amount: string; assetCode: string; assetScale: number } =
-        res.detail;
-      totalSupport =
-        totalSupport +
-        Number.parseInt(detail.amount) / Math.pow(10, detail.assetScale);
-    }
-  };
-
+const monetizeExample = () => {
   // Add monetization listener
   if (document && (<any>document).monetization) {
     (<any>document).monetization.addEventListener(
       'monetizationprogress',
-      monetizationprogress
+      (evt: any) => emit(MonetizeEvent.progress, evt)
     );
   } else {
-    window.addEventListener('monetizationprogress', monetizationprogress);
+    window.addEventListener('monetizationprogress', (evt: any) =>
+      emit(MonetizeEvent.progress, evt)
+    );
   }
 };
 
 function init() {
-  const bodyEl: HTMLElement = document.getElementsByTagName('body')[0];
   const gameEl: HTMLCanvasElement = <HTMLCanvasElement>(
     document.getElementById('game')
   );
 
-  monetizeExample(bodyEl);
+  monetizeExample();
   new Game(gameEl);
 }
 init();

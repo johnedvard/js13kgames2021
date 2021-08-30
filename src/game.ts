@@ -32,7 +32,7 @@ export class Game {
     initKeys();
     this.menu = new Menu(this, this.scale);
     this.initLoop();
-    on(GameEvent.startGame, () => this.onStartGame());
+    on(GameEvent.startGame, this.onStartGame);
   }
   initLoop() {
     this.gos.push(this.menu);
@@ -55,15 +55,17 @@ export class Game {
       initLoginLogout(nearConnection);
     });
   }
-  async onStartGame() {
+  onStartGame = async (props: { spaceShipRenderIndex: number }) => {
     if (this.gos.includes(this.menu)) {
       this.gos.splice(this.gos.indexOf(this.menu), 1);
       const userName = await this.nearConnection.getName();
       this.player = new Player(this, this.scale, {
         color: '#' + createColorFromName(userName),
         isAi: false,
+        spaceShipRenderIndex: props.spaceShipRenderIndex,
       });
       this.gos.push(this.player);
+    } else {
     }
-  }
+  };
 }

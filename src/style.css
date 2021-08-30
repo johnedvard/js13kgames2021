@@ -55,5 +55,24 @@ button {
   border-color: var(--text);
 }
 #loginout {
-  margin-top: 170px;
+  margin-top: 70px;
+}
+#arrowGroup {
+  /* Center the content */
+  align-items: center;
+  display: flex;
+  width: 50%;
+  align-items: flex-start;
+  margin-top: 120px;
+}
+#arrowGroup > button {
+  width: 30px;
+}
+#rightArrow {
+  margin-left: auto;
+}
+#spaceDesc {
+  transform: scale(1);
+  flex: 1 1;
+  text-align: center;
 }

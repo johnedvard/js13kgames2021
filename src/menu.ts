@@ -1,29 +1,31 @@
 import { Game } from './game';
-import KontraSprite from './../kontra/src/sprite';
 import { IGameObject } from './iGameobject';
 import { Sprite } from '../kontra/kontra';
-import { emit } from '../kontra/src/events';
+import { emit, on } from '../kontra/src/events';
 import { createColorFromName } from './gameUtils';
 import { GameEvent } from './gameEvent';
 import { SpaceShip } from './spaceShip';
 import { PlayerState } from './playerState';
 import { bindKeys } from '../kontra/src/keyboard';
+import { MonetizeEvent } from './monetizeEvent';
 
 export class Menu implements IGameObject {
   go: Sprite;
+  spaceShip: SpaceShip;
   menuEl: HTMLElement;
+  spaceDesc: HTMLElement;
   userName: string;
   constructor(private game: Game, scale: number) {
     const spriteProps = {
       x: this.game.canvas.width / 2, // starting x,y position of the sprite
       y: window.innerHeight / 2,
     };
-    const spaceShip = new SpaceShip(this.game, PlayerState.idle, {
+    this.spaceShip = new SpaceShip(this.game, PlayerState.idle, {
       scale: scale || 1,
       spriteProps,
       isPreview: true,
     });
-    this.go = spaceShip.sprite;
+    this.go = this.spaceShip.sprite;
     this.menuEl = document.getElementById('menu');
 
     const nameEl = document.getElementById('name');
@@ -34,11 +36,39 @@ export class Menu implements IGameObject {
     startgameEl.addEventListener('click', (ev) => {
       this.game.nearConnection.ready.then(() => {
         this.game.nearConnection.setName(this.userName);
-        emit(GameEvent.startGame, {});
+        emit(GameEvent.startGame, {
+          spaceShipRenderIndex: this.spaceShip.spaceshipIndex,
+        });
         this.menuEl.classList.add('out');
       });
     });
+
+    this.selectSpaceShipControls();
     this.handleInput();
+
+    on(MonetizeEvent.progress, this.onMonetizeProgress);
+  }
+  onMonetizeProgress = () => {
+    this.spaceDesc = this.spaceDesc || document.getElementById('spaceDesc');
+    if (!this.spaceDesc.classList.contains('subscriber')) {
+      this.spaceDesc.classList.add('subscriber');
+      this.spaceDesc.innerHTML = 'Thanks for being a Coil subscriver';
+    }
+  };
+  selectSpaceShipControls() {
+    const leftArrowEl = document.getElementById('leftArrow');
+    const rightArrowEl = document.getElementById('rightArrow');
+    leftArrowEl.addEventListener('click', (ev) => this.selectSpaceShip(-1));
+    rightArrowEl.addEventListener('click', (ev) => this.selectSpaceShip(1));
+  }
+  selectSpaceShip(next: number) {
+    let newSpaceShipIndex = this.spaceShip.spaceshipIndex + next;
+    if (newSpaceShipIndex < 0) {
+      newSpaceShipIndex = this.spaceShip.ships.length - 1;
+    } else if (newSpaceShipIndex >= this.spaceShip.ships.length) {
+      newSpaceShipIndex = 0;
+    }
+    this.spaceShip.spaceshipIndex = newSpaceShipIndex;
   }
   handleInput() {
     bindKeys(

@@ -5,11 +5,14 @@ import KontraSprite from '../kontra/src/sprite';
 import { Game } from './game';
 import { GameEvent } from './gameEvent';
 import { PlayerState } from './playerState';
+import { spaceShipRenderers } from './spaceShipRenderers';
 
 export class SpaceShip {
   sprite: Sprite;
   rightKey = 'right';
   leftKey = 'left';
+  spaceshipIndex = 0;
+  ships: any[] = spaceShipRenderers;
   constructor(
     private game: Game,
     private playerState: PlayerState,
@@ -34,16 +37,7 @@ export class SpaceShip {
       anchor: { x: 0.1, y: 0.5 },
       rotation: -Math.PI / 2,
       render: function () {
-        // render triangle
-        if (spaceShip.playerState !== PlayerState.dead) {
-          this.context.fillStyle = this.color;
-          this.context.beginPath();
-          this.context.lineCap = 'round';
-          this.context.moveTo(0, 0); // top left corner
-          this.context.lineTo(this.width, this.height / 2); // bottom
-          this.context.lineTo(0, this.height); // top right corner
-          this.context.fill();
-        }
+        spaceShip.renderSpaceShip(this);
       },
       update: function (dt: number) {
         if (keyPressed(spaceShip.leftKey)) {
@@ -92,6 +86,11 @@ export class SpaceShip {
   onPlayerStateChange(evt: { state: PlayerState; ship: SpaceShip }) {
     if (evt.ship === this) {
       this.playerState = evt.state;
+    }
+  }
+  renderSpaceShip(sprite: Sprite) {
+    if (this.playerState !== PlayerState.dead) {
+      spaceShipRenderers[this.spaceshipIndex](sprite);
     }
   }
 }

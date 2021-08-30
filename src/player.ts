@@ -11,6 +11,7 @@ import {
 } from './gameUtils';
 import { Vector, Sprite } from '../kontra/kontra';
 import { SpaceShip } from './spaceShip';
+import { MonetizeEvent } from './monetizeEvent';
 
 class Player implements IGameObject {
   go: Sprite;
@@ -25,7 +26,11 @@ class Player implements IGameObject {
   constructor(
     private game: Game,
     private scale: number,
-    private playerProps: { color: string; isAi: boolean }
+    private playerProps: {
+      color: string;
+      isAi: boolean;
+      spaceShipRenderIndex: number;
+    }
   ) {
     this.speed = 100 * this.scale;
     this.removedSpace = [];
@@ -55,8 +60,17 @@ class Player implements IGameObject {
     on(GameEvent.hitRemovedSpace, this.onHitRemovedSpace);
     on(GameEvent.hitWall, this.onHitWall);
 
+    on(MonetizeEvent.progress, this.onMonetizeProgress);
+
     this.go = this.spaceShip.sprite;
   }
+  onMonetizeProgress = (evt: any) => {
+    if (
+      this.spaceShip.spaceshipIndex !== this.playerProps.spaceShipRenderIndex
+    ) {
+      this.spaceShip.spaceshipIndex = this.playerProps.spaceShipRenderIndex;
+    }
+  };
   update(dt: number): void {
     this.go.update(dt);
     checkLineIntersection(this.trails, this.go);
