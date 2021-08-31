@@ -3,7 +3,6 @@ import { Game } from './game';
 import { MonetizeEvent } from './monetizeEvent';
 
 const monetizeExample = () => {
-  // Add monetization listener
   if (document && (<any>document).monetization) {
     (<any>document).monetization.addEventListener(
       'monetizationprogress',
