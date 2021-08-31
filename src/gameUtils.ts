@@ -72,9 +72,7 @@ export const createColorFromName = (name: string) => {
       const hexStr = color[i % 6];
       const newHexStr = ((hexNum + deciNum) % 16).toString(16);
       color = color.replace(hexStr, newHexStr);
-    } catch {
-      // Nothing
-    }
+    } catch {}
   }
   return color;
 };
