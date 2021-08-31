@@ -30,8 +30,8 @@ export class SpaceShip {
     const ship: any = KontraSprite({
       x: props.spriteProps.x,
       y: props.spriteProps.y,
-      color: props.spriteProps.color || '#000', // fill color of the sprite rectangle
-      width: 15 * props.scale, // width and height of the sprite rectangle
+      color: props.spriteProps.color || '#000',
+      width: 15 * props.scale,
       height: 10 * props.scale,
       dx: 0,
       anchor: { x: 0.1, y: 0.5 },
