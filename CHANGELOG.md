@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.3](https://github.com/johnedvard/js13kgames2021/compare/v1.1.0...v1.2.3) (2021-08-31)
+
+
+### Features
+
+* Add keyhole spaceship ([b448965](https://github.com/johnedvard/js13kgames2021/commit/b448965af6ce3b4603c1f45f58c483290767c723))
+* Add spaceship selector and apply for subscribers ([129f30c](https://github.com/johnedvard/js13kgames2021/commit/129f30cb564c7f4b6ac2876acc8547ff32970d0e))
+
+
+### Bug Fixes
+
+* Fix spelling mistake in script ([c498ff6](https://github.com/johnedvard/js13kgames2021/commit/c498ff6b42ce6395f9f717799f89f00f7871c23b))
+
 ### [1.2.2](https://github.com/johnedvard/js13kgames2021/compare/v1.1.0...v1.2.2) (2021-08-31)
 
 
