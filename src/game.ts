@@ -45,7 +45,7 @@ export class Game {
         this.gos.forEach((go) => go.render());
       },
     });
-    loop.start(); // start the game
+    loop.start();
   }
 
   initNear() {
