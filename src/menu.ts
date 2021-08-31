@@ -17,7 +17,7 @@ export class Menu implements IGameObject {
   userName: string;
   constructor(private game: Game, scale: number) {
     const spriteProps = {
-      x: this.game.canvas.width / 2, // starting x,y position of the sprite
+      x: this.game.canvas.width / 2,
       y: window.innerHeight / 2,
     };
     this.spaceShip = new SpaceShip(this.game, PlayerState.idle, {
