@@ -14,6 +14,7 @@
     "dev:deploy:contract": "near dev-deploy",
     "deploy:contract": "near deploy",
     "release:minor": "standard-version release --release-as minor",
+    "release:patch": "standard-version release --release-as patch",
     "test": "npm run build:contract:debug && cd contract && npm run test && cd .. && jest test --runInBand"
   },
   "keywords": [
