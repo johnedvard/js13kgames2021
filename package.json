@@ -1,7 +1,7 @@
 {
   "name": "js13kgames-2021",
   "sideEffects": false,
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Game entry for js13kgames",
   "main": "index.ts",
   "scripts": {

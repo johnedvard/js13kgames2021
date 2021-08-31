@@ -89,7 +89,7 @@ class Player implements IGameObject {
       this.ctx.lineWidth = 3 * this.scale;
       this.ctx.beginPath();
       this.ctx.moveTo(this.trails[0].x, this.trails[0].y);
-      this.ctx.strokeStyle = this.playerProps.color || '#000'; // TODO (johnedvard) generate based on hash from Near.
+      this.ctx.strokeStyle = this.playerProps.color || '#000';
       this.trails.forEach((t) => {
         this.ctx.lineTo(t.x, t.y);
       });
