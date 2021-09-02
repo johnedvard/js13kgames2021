@@ -2,6 +2,7 @@ import { Sprite } from '../kontra/kontra';
 import { emit, on } from '../kontra/src/events';
 import { bindKeys, keyPressed } from '../kontra/src/keyboard';
 import KontraSprite from '../kontra/src/sprite';
+import { EngineParticleEffect } from './engineParticleEffect';
 import { Game } from './game';
 import { GameEvent } from './gameEvent';
 import { PlayerState } from './playerState';
@@ -13,6 +14,7 @@ export class SpaceShip {
   leftKey = 'left';
   spaceshipIndex = 0;
   ships: any[] = spaceShipRenderers;
+  particleEffect: EngineParticleEffect;
   constructor(
     private game: Game,
     private playerState: PlayerState,
@@ -27,6 +29,8 @@ export class SpaceShip {
     this.rightKey = props.rightKey || this.rightKey;
     this.leftKey = props.leftKey || this.leftKey;
     const spaceShip = this;
+    this.particleEffect = new EngineParticleEffect();
+    const rotationSpeed = 5;
     const ship: any = KontraSprite({
       x: props.spriteProps.x,
       y: props.spriteProps.y,
@@ -41,11 +45,11 @@ export class SpaceShip {
       },
       update: function (dt: number) {
         if (keyPressed(spaceShip.leftKey)) {
-          this.rotation -= 10 * dt;
+          this.rotation -= rotationSpeed * dt;
           emit(GameEvent.playerRotation, -1);
         }
         if (keyPressed(spaceShip.rightKey)) {
-          this.rotation += 10 * dt;
+          this.rotation += rotationSpeed * dt;
           emit(GameEvent.playerRotation, 1);
         }
         if (
@@ -57,6 +61,7 @@ export class SpaceShip {
         // move the ship forward in the direction it's facing
         this.x = this.x + this.dx * dt * Math.cos(this.rotation);
         this.y = this.y + this.dy * dt * Math.sin(this.rotation);
+        spaceShip.updateSpaceShip(dt);
       },
     });
     this.sprite = ship;
@@ -69,6 +74,7 @@ export class SpaceShip {
       this.handleInput();
     }
   }
+
   handleInput() {
     bindKeys(
       'space',
@@ -83,14 +89,21 @@ export class SpaceShip {
       { handler: 'keyup' }
     );
   }
+
   onPlayerStateChange(evt: { state: PlayerState; ship: SpaceShip }) {
     if (evt.ship === this) {
       this.playerState = evt.state;
     }
   }
+
+  updateSpaceShip = (dt: number) => {
+    this.particleEffect.updatePool();
+  };
+
   renderSpaceShip(sprite: Sprite) {
     if (this.playerState !== PlayerState.dead) {
       spaceShipRenderers[this.spaceshipIndex](sprite);
     }
+    this.particleEffect.render();
   }
 }
