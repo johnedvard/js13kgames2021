@@ -9,6 +9,7 @@ import { Menu } from './menu';
 import { on } from '../kontra/src/events';
 import { GameEvent } from './gameEvent';
 import { createColorFromName } from './gameUtils';
+import { EngineParticleEffect } from './engineParticleEffect';
 
 export class Game {
   canvas: HTMLCanvasElement;

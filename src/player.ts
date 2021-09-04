@@ -12,6 +12,7 @@ import {
 import { Vector, Sprite } from '../kontra/kontra';
 import { SpaceShip } from './spaceShip';
 import { MonetizeEvent } from './monetizeEvent';
+import { EngineParticleEffect } from './engineParticleEffect';
 
 class Player implements IGameObject {
   go: Sprite;
@@ -22,7 +23,7 @@ class Player implements IGameObject {
   speed: number;
   removedSpace: Vector[] = []; // Points
   wallLineSegments: Vector[] = [];
-
+  effect: EngineParticleEffect;
   constructor(
     private game: Game,
     private scale: number,
@@ -32,6 +33,7 @@ class Player implements IGameObject {
       spaceShipRenderIndex: number;
     }
   ) {
+    this.effect = new EngineParticleEffect();
     this.speed = 100 * this.scale;
     this.removedSpace = [];
     this.trails = [];
@@ -73,12 +75,16 @@ class Player implements IGameObject {
   };
   update(dt: number): void {
     this.go.update(dt);
-    checkLineIntersection(this.trails, this.go);
-    this.checkRemovedSpaceCollision();
+    this.effect.x = this.go.x;
+    this.effect.y = this.go.y;
+    this.effect.update(dt);
+    // checkLineIntersection(this.trails, this.go);
+    // this.checkRemovedSpaceCollision();
     this.wallCollision();
     this.updateDeadPlayer();
   }
   render(): void {
+    this.effect.render();
     this.renderTrail();
     this.renderRemovedSpace();
     this.go.render();

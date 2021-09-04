@@ -97,7 +97,7 @@ export class SpaceShip {
   }
 
   updateSpaceShip = (dt: number) => {
-    this.particleEffect.updatePool();
+    this.particleEffect.updatePool(dt);
   };
 
   renderSpaceShip(sprite: Sprite) {
