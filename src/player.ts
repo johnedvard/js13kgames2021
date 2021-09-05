@@ -4,26 +4,23 @@ import { emit, on } from '../kontra/src/events';
 import { GameEvent } from './gameEvent';
 import KontraVector from '../kontra/src/vector';
 import { Game } from './game';
-import {
-  checkLineIntersection,
-  isOutOfBounds,
-  lineIntersection,
-} from './gameUtils';
+import { getRandomPos, isOutOfBounds } from './gameUtils';
 import { Vector, Sprite } from '../kontra/kontra';
 import { SpaceShip } from './spaceShip';
 import { MonetizeEvent } from './monetizeEvent';
 import { EngineParticleEffect } from './engineParticleEffect';
+import { addPlayer, checkLineIntersection, playerTrails } from './trails';
 
 class Player implements IGameObject {
-  go: Sprite;
+  sprite: Sprite;
   spaceShip: SpaceShip;
   playerState: PlayerState = PlayerState.idle;
-  trails: Vector[] = []; // Points
+  trails: Vector[];
   ctx: CanvasRenderingContext2D;
   speed: number;
-  removedSpace: Vector[] = []; // Points
-  wallLineSegments: Vector[] = [];
   effect: EngineParticleEffect;
+  playerId: number;
+  rotating = false;
   constructor(
     private game: Game,
     private scale: number,
@@ -31,40 +28,42 @@ class Player implements IGameObject {
       color: string;
       isAi: boolean;
       spaceShipRenderIndex: number;
+      playerId: number;
     }
   ) {
+    this.playerId = this.playerProps.playerId;
     this.effect = new EngineParticleEffect();
     this.speed = 100 * this.scale;
-    this.removedSpace = [];
-    this.trails = [];
+    this.trails = playerTrails[this.playerProps.playerId];
     this.ctx = this.game.ctx;
-    this.wallLineSegments = [
-      KontraVector(0, 0),
-      KontraVector(this.game.canvas.width, 0),
-      KontraVector(this.game.canvas.width, this.game.canvas.height),
-      KontraVector(0, this.game.canvas.height),
-      KontraVector(0, 0),
-    ];
     const spriteProps = {
-      x: this.game.canvas.width / 2,
-      y: this.game.canvas.height,
+      x: getRandomPos(this.game.canvasWidth * this.game.scale),
+      y: getRandomPos(this.game.canvasHeight * this.game.scale),
       color: this.playerProps.color || '#000',
     };
+    let leftKey = 'left';
+    let rightKey = 'right';
+    if (playerProps.playerId === 1) {
+      leftKey = 'a';
+      rightKey = 'd';
+    }
     this.spaceShip = new SpaceShip(this.game, this.playerState, {
       scale: this.scale,
       spriteProps,
       isPreview: false,
+      rightKey,
+      leftKey,
     });
 
     on(GameEvent.playerRotation, this.onPayerRotation);
     on(GameEvent.startTrace, this.onStartTrace);
     on(GameEvent.hitTrail, this.onHitTrail);
-    on(GameEvent.hitRemovedSpace, this.onHitRemovedSpace);
     on(GameEvent.hitWall, this.onHitWall);
 
     on(MonetizeEvent.progress, this.onMonetizeProgress);
 
-    this.go = this.spaceShip.sprite;
+    this.sprite = this.spaceShip.sprite;
+    addPlayer(this);
   }
   onMonetizeProgress = (evt: any) => {
     if (
@@ -74,20 +73,16 @@ class Player implements IGameObject {
     }
   };
   update(dt: number): void {
-    this.go.update(dt);
-    this.effect.x = this.go.x;
-    this.effect.y = this.go.y;
-    this.effect.update(dt);
-    // checkLineIntersection(this.trails, this.go);
-    // this.checkRemovedSpaceCollision();
+    this.sprite.update(dt);
+    checkLineIntersection(this.trails[this.trails.length - 1], this.sprite);
+    this.updateEngineEffect(dt);
     this.wallCollision();
     this.updateDeadPlayer();
   }
   render(): void {
-    this.effect.render();
     this.renderTrail();
-    this.renderRemovedSpace();
-    this.go.render();
+    this.sprite.render();
+    this.effect.render();
     this.renderDeadPlayer();
   }
   renderTrail = () => {
@@ -101,94 +96,61 @@ class Player implements IGameObject {
       });
       this.ctx.stroke();
       if (this.playerState !== PlayerState.dead) {
-        this.ctx.lineTo(this.go.x, this.go.y);
+        this.ctx.lineTo(this.sprite.x, this.sprite.y);
         this.ctx.stroke();
       }
     }
   };
-  renderRemovedSpace = () => {
-    if (!this.removedSpace.length) return;
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.removedSpace[0].x, this.removedSpace[0].y);
-    this.ctx.fillStyle = 'blue'; // TODO (johnedvard) generate based on hash from Near.
-    this.removedSpace.forEach((p) => {
-      this.ctx.lineTo(p.x, p.y);
-    });
-    this.ctx.stroke();
-  };
-  onPayerRotation = (rotationDirection: number) => {
-    if (this.playerState === PlayerState.tracing) {
-      this.trails.push(KontraVector(this.go.x, this.go.y));
+  onPayerRotation = ({
+    sprite,
+    rotationDirection,
+  }: {
+    sprite: Sprite;
+    rotationDirection: number;
+  }) => {
+    if (sprite === this.sprite && this.playerState === PlayerState.tracing) {
+      this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
     }
   };
   onStartTrace = () => {
-    this.go.dx = this.speed;
-    this.go.dy = this.speed;
+    this.sprite.dx = this.speed;
+    this.sprite.dy = this.speed;
     this.setPlayerState(PlayerState.tracing);
-    this.trails.push(KontraVector(this.go.x, this.go.y));
+    this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
   };
   onHitTrail = ({ point, go }: { point: Vector; go: Sprite }) => {
-    if (go === this.go) {
+    if (go === this.sprite) {
+      if (this.playerState !== PlayerState.dead) {
+        console.log(this);
+      }
       this.setPlayerState(PlayerState.dead);
+      // finish trail by adding last point
       this.trails.push(point);
     }
-  };
-  onHitRemovedSpace = ({ point, go }: { point: Vector; go: Sprite }) => {
-    if (go === this.go) {
-      this.onCommonHit({ point, go });
+    if (!this.spaceShip.rotating) {
+      // Add point to prevent alive player from dying right after being hit, but only if not rotating
+      this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
     }
   };
   onHitWall = ({ point, go }: { point: Vector; go: Sprite }) => {
-    if (go === this.go) {
-      this.onCommonHit({ point, go });
-      this.setPlayerState(PlayerState.dead);
-      this.trails.push(point);
-    }
-  };
-  onCommonHit = ({ point, go }: { point: Vector; go: Sprite }) => {
-    this.setPlayerState(PlayerState.idle);
-    this.removedSpace = [
-      ...this.removedSpace,
-      ...this.trails,
-      KontraVector(go.x, go.y),
-    ];
-    this.trails = [];
-  };
-
-  checkRemovedSpaceCollision = () => {
-    if (this.trails.length < 2) return; // prevent hitting wall if the player just started moving while tracing
-    if (this.playerState === PlayerState.tracing) {
-      for (let i = 0; i < this.removedSpace.length - 1; i++) {
-        const point = this.removedSpace[i];
-        const point2 = this.removedSpace[i + 1];
-        const lastPoint = KontraVector(this.go.x, this.go.y);
-        const lastPoint2 = this.trails[this.trails.length - 1];
-        if (point && point2 && lastPoint && lastPoint2) {
-          const intersection = lineIntersection(
-            point,
-            point2,
-            lastPoint,
-            lastPoint2
-          );
-          if (intersection && intersection.x) {
-            emit(GameEvent.hitRemovedSpace, {
-              point: intersection,
-              go: this.go,
-            });
-          }
-        }
+    if (go === this.sprite) {
+      if (this.playerState !== PlayerState.dead) {
+        console.log(this);
       }
+      this.setPlayerState(PlayerState.dead);
+      // finish trail by adding last point
+      this.trails.push(point);
     }
   };
   wallCollision = () => {
     if (
       this.playerState === PlayerState.tracing &&
-      isOutOfBounds(this.game, this.go)
+      isOutOfBounds(this.game, this.sprite)
     ) {
-      const point: Vector = KontraVector(this.go.x, this.go.y);
+      const point: Vector = KontraVector(this.sprite.x, this.sprite.y);
       emit(GameEvent.hitWall, {
         point: point,
-        go: this.go,
+        go: this.sprite,
       });
     }
   };
@@ -206,5 +168,14 @@ class Player implements IGameObject {
     this.playerState = state;
     emit(GameEvent.playerStateChange, { state, ship: this.spaceShip });
   }
+  updateEngineEffect = (dt: number) => {
+    this.effect.sprite.x = this.sprite.x - 5;
+    this.effect.sprite.y = this.sprite.y - 5;
+    this.effect.dx = this.sprite.dx;
+    this.effect.dy = this.sprite.dy;
+    this.effect.rotation = this.sprite.rotation;
+    this.effect.sprite.color = this.sprite.color;
+    this.effect.update(dt);
+  };
 }
 export { Player };

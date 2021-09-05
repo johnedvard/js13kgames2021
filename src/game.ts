@@ -9,7 +9,6 @@ import { Menu } from './menu';
 import { on } from '../kontra/src/events';
 import { GameEvent } from './gameEvent';
 import { createColorFromName } from './gameUtils';
-import { EngineParticleEffect } from './engineParticleEffect';
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -21,6 +20,8 @@ export class Game {
   scale: number;
   canvasWidth = 800;
   canvasHeight = 600;
+  player2Name = 'e500ff';
+  player3Name = '814007';
   nearConnection: NearConnection;
   constructor(canvas: HTMLCanvasElement) {
     this.initNear();
@@ -48,7 +49,6 @@ export class Game {
     });
     loop.start();
   }
-
   initNear() {
     const nearConnection = new NearConnection();
     this.nearConnection = nearConnection;
@@ -60,12 +60,20 @@ export class Game {
     if (this.gos.includes(this.menu)) {
       this.gos.splice(this.gos.indexOf(this.menu), 1);
       const userName = await this.nearConnection.getName();
-      this.player = new Player(this, this.scale, {
+      const player = new Player(this, this.scale, {
         color: '#' + createColorFromName(userName),
         isAi: false,
         spaceShipRenderIndex: props.spaceShipRenderIndex,
+        playerId: 0,
       });
-      this.gos.push(this.player);
+      const player2 = new Player(this, this.scale, {
+        color: '#' + createColorFromName(this.player2Name),
+        isAi: false,
+        spaceShipRenderIndex: props.spaceShipRenderIndex,
+        playerId: 1,
+      });
+      this.gos.push(player);
+      this.gos.push(player2);
     } else {
     }
   };

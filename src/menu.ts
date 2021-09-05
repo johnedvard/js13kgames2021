@@ -10,7 +10,7 @@ import { bindKeys } from '../kontra/src/keyboard';
 import { MonetizeEvent } from './monetizeEvent';
 
 export class Menu implements IGameObject {
-  go: Sprite;
+  sprite: Sprite;
   spaceShip: SpaceShip;
   menuEl: HTMLElement;
   spaceDesc: HTMLElement;
@@ -25,7 +25,7 @@ export class Menu implements IGameObject {
       spriteProps,
       isPreview: true,
     });
-    this.go = this.spaceShip.sprite;
+    this.sprite = this.spaceShip.sprite;
     this.menuEl = document.getElementById('menu');
 
     const nameEl = document.getElementById('name');
@@ -45,14 +45,15 @@ export class Menu implements IGameObject {
 
     this.selectSpaceShipControls();
     this.handleInput();
-
+    this.setSubscriptionTextVisibility(0);
     on(MonetizeEvent.progress, this.onMonetizeProgress);
   }
   onMonetizeProgress = () => {
     this.spaceDesc = this.spaceDesc || document.getElementById('spaceDesc');
     if (!this.spaceDesc.classList.contains('subscriber')) {
       this.spaceDesc.classList.add('subscriber');
-      this.spaceDesc.innerHTML = 'Thanks for being a Coil subscriver';
+      this.spaceDesc.innerHTML =
+        'Thanks for being a Coil subscriber. You can use this ship';
     }
   };
   selectSpaceShipControls() {
@@ -69,7 +70,16 @@ export class Menu implements IGameObject {
       newSpaceShipIndex = 0;
     }
     this.spaceShip.spaceshipIndex = newSpaceShipIndex;
+    this.setSubscriptionTextVisibility(newSpaceShipIndex);
   }
+  setSubscriptionTextVisibility = (newSpaceShipIndex: number) => {
+    this.spaceDesc = this.spaceDesc || document.getElementById('spaceDesc');
+    if (newSpaceShipIndex) {
+      this.spaceDesc.classList.remove('hide');
+    } else {
+      this.spaceDesc.classList.add('hide');
+    }
+  };
   handleInput() {
     bindKeys(
       'm',
@@ -89,17 +99,17 @@ export class Menu implements IGameObject {
     }
   }
   update(dt: number): void {
-    this.go.update(dt);
+    this.sprite.update(dt);
   }
   render(): void {
-    this.go.render();
+    this.sprite.render();
   }
   nameChange(event: any) {
     this.userName = event.target.value;
     this.setColorFromName(this.userName);
   }
   setColorFromName(name: string) {
-    this.go.color = '#' + createColorFromName(name);
+    this.sprite.color = '#' + createColorFromName(name);
   }
   async setUserName(nameEl: HTMLElement) {
     await this.game.nearConnection.ready;

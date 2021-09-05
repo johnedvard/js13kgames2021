@@ -75,7 +75,6 @@ export class NearConnection {
   }
 
   setName(name: string): Promise<void> {
-    console.log('set username', name);
     if (
       name &&
       name != this.userName &&
@@ -92,10 +91,8 @@ export class NearConnection {
     if (this.userName) {
       return Promise.resolve(this.userName);
     }
-    console.log('this.contract ', this.contract);
     const accountId = this.accountId;
     return (<any>this.contract).getName({ accountId }).then((res: string) => {
-      console.log('get name', res);
       if (res && res.match(/[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/g)) {
         this.userName = 'Invalid username';
       } else {

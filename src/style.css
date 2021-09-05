@@ -76,3 +76,7 @@ button {
   flex: 1 1;
   text-align: center;
 }
+
+#spaceDesc.hide {
+  display: none;
+}

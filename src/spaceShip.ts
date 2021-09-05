@@ -2,7 +2,6 @@ import { Sprite } from '../kontra/kontra';
 import { emit, on } from '../kontra/src/events';
 import { bindKeys, keyPressed } from '../kontra/src/keyboard';
 import KontraSprite from '../kontra/src/sprite';
-import { EngineParticleEffect } from './engineParticleEffect';
 import { Game } from './game';
 import { GameEvent } from './gameEvent';
 import { PlayerState } from './playerState';
@@ -14,7 +13,7 @@ export class SpaceShip {
   leftKey = 'left';
   spaceshipIndex = 0;
   ships: any[] = spaceShipRenderers;
-  particleEffect: EngineParticleEffect;
+  rotating = false;
   constructor(
     private game: Game,
     private playerState: PlayerState,
@@ -29,7 +28,6 @@ export class SpaceShip {
     this.rightKey = props.rightKey || this.rightKey;
     this.leftKey = props.leftKey || this.leftKey;
     const spaceShip = this;
-    this.particleEffect = new EngineParticleEffect();
     const rotationSpeed = 5;
     const ship: any = KontraSprite({
       x: props.spriteProps.x,
@@ -46,11 +44,20 @@ export class SpaceShip {
       update: function (dt: number) {
         if (keyPressed(spaceShip.leftKey)) {
           this.rotation -= rotationSpeed * dt;
-          emit(GameEvent.playerRotation, -1);
-        }
-        if (keyPressed(spaceShip.rightKey)) {
+          emit(GameEvent.playerRotation, {
+            rotationDirection: -1,
+            sprite: spaceShip.sprite,
+          });
+          spaceShip.rotating = true;
+        } else if (keyPressed(spaceShip.rightKey)) {
           this.rotation += rotationSpeed * dt;
-          emit(GameEvent.playerRotation, 1);
+          emit(GameEvent.playerRotation, {
+            rotationDirection: 1,
+            sprite: spaceShip.sprite,
+          });
+          spaceShip.rotating = true;
+        } else {
+          spaceShip.rotating = false;
         }
         if (
           spaceShip.playerState === PlayerState.dead ||
@@ -61,7 +68,6 @@ export class SpaceShip {
         // move the ship forward in the direction it's facing
         this.x = this.x + this.dx * dt * Math.cos(this.rotation);
         this.y = this.y + this.dy * dt * Math.sin(this.rotation);
-        spaceShip.updateSpaceShip(dt);
       },
     });
     this.sprite = ship;
@@ -96,14 +102,9 @@ export class SpaceShip {
     }
   }
 
-  updateSpaceShip = (dt: number) => {
-    this.particleEffect.updatePool(dt);
-  };
-
   renderSpaceShip(sprite: Sprite) {
     if (this.playerState !== PlayerState.dead) {
       spaceShipRenderers[this.spaceshipIndex](sprite);
     }
-    this.particleEffect.render();
   }
 }
