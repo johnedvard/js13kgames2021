@@ -12,7 +12,7 @@ export class SpaceShip {
   rightKey = 'right';
   leftKey = 'left';
   spaceshipIndex = 0;
-  ships: any[] = spaceShipRenderers;
+  ships: any[] = [...spaceShipRenderers];
   rotating = false;
   constructor(
     private game: Game,

@@ -4,11 +4,10 @@ import KontraVector from '../kontra/src/vector';
 import { GameEvent } from './gameEvent';
 import { lineIntersection } from './gameUtils';
 import { Player } from './player';
-import { PlayerState } from './playerState';
 
 // TODO (johnedvard) don't hardcode players
-const players: Player[] = [null, null];
-export const playerTrails: Vector[][] = [[], []];
+const players: Player[] = [null, null, null, null];
+export const playerTrails: Vector[][] = [[], [], [], []];
 /**
  * Used to add the player's latest position to the trail before checking intersection
  */

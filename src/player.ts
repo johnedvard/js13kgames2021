@@ -41,12 +41,7 @@ class Player implements IGameObject {
       y: getRandomPos(this.game.canvasHeight * this.game.scale),
       color: this.playerProps.color || '#000',
     };
-    let leftKey = 'left';
-    let rightKey = 'right';
-    if (playerProps.playerId === 1) {
-      leftKey = 'a';
-      rightKey = 'd';
-    }
+    const [leftKey, rightKey] = this.setPlayerControls();
     this.spaceShip = new SpaceShip(this.game, this.playerState, {
       scale: this.scale,
       spriteProps,
@@ -65,7 +60,25 @@ class Player implements IGameObject {
     this.sprite = this.spaceShip.sprite;
     addPlayer(this);
   }
+  setPlayerControls(): string[] {
+    let leftKey = 'left';
+    let rightKey = 'right';
+    if (this.playerProps.playerId === 1) {
+      leftKey = 'q';
+      rightKey = 'w';
+    }
+    if (this.playerProps.playerId === 2) {
+      leftKey = 'v';
+      rightKey = 'b';
+    }
+    if (this.playerProps.playerId === 3) {
+      leftKey = 'o';
+      rightKey = 'p';
+    }
+    return [leftKey, rightKey];
+  }
   onMonetizeProgress = (evt: any) => {
+    console.log('onMonetizeProgress', evt);
     if (
       this.spaceShip.spaceshipIndex !== this.playerProps.spaceShipRenderIndex
     ) {

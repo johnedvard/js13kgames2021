@@ -11,21 +11,29 @@ import { MonetizeEvent } from './monetizeEvent';
 
 export class Menu implements IGameObject {
   sprite: Sprite;
-  spaceShip: SpaceShip;
+  spaceShips: SpaceShip[];
   menuEl: HTMLElement;
   spaceDesc: HTMLElement;
   userName: string;
   constructor(private game: Game, scale: number) {
-    const spriteProps = {
-      x: this.game.canvas.width / 2,
-      y: window.innerHeight / 2,
-    };
-    this.spaceShip = new SpaceShip(this.game, PlayerState.idle, {
-      scale: scale || 1,
-      spriteProps,
-      isPreview: true,
+    const offset = 130;
+    const gap = 355;
+    this.spaceShips = [...Array(game.maxPlayers).keys()].map((id) => {
+      const spriteProps = {
+        x: this.game.canvas.width / 4 + gap * id - offset,
+        y: window.innerHeight / 2,
+        color:
+          id > 0
+            ? '#' + createColorFromName(game.extraPlayerNames[id - 1])
+            : '',
+      };
+      return new SpaceShip(this.game, PlayerState.idle, {
+        scale: scale || 1,
+        spriteProps: { ...spriteProps },
+        isPreview: true,
+      });
     });
-    this.sprite = this.spaceShip.sprite;
+    console.log('this.spaceShips', this.spaceShips);
     this.menuEl = document.getElementById('menu');
 
     const nameEl = document.getElementById('name');
@@ -37,17 +45,44 @@ export class Menu implements IGameObject {
       this.game.nearConnection.ready.then(() => {
         this.game.nearConnection.setName(this.userName);
         emit(GameEvent.startGame, {
-          spaceShipRenderIndex: this.spaceShip.spaceshipIndex,
+          spaceShipRenderIndices: this.spaceShips.map((ship) => {
+            return ship.spaceshipIndex;
+          }),
         });
         this.menuEl.classList.add('out');
       });
     });
 
-    this.selectSpaceShipControls();
     this.handleInput();
     this.setSubscriptionTextVisibility(0);
+    this.initSpaceshipSelectionUi();
     on(MonetizeEvent.progress, this.onMonetizeProgress);
   }
+  initSpaceshipSelectionUi = () => {
+    const arrowGroupEl: HTMLElement = document.getElementById('arrowGroup');
+    arrowGroupEl.addEventListener('click', (evt) => this.onArrowClicked(evt));
+    for (let i = 0; i < this.game.maxPlayers; i++) {
+      const leftArrow = document.createElement('button');
+      leftArrow.setAttribute('id', 'leftArrow-' + i);
+      leftArrow.innerHTML = '<';
+      const rightArrow = document.createElement('button');
+      rightArrow.setAttribute('id', 'rightArrow-' + i);
+      rightArrow.innerHTML = '>';
+      arrowGroupEl.appendChild(leftArrow);
+      arrowGroupEl.appendChild(rightArrow);
+    }
+  };
+  onArrowClicked = (evt: Event) => {
+    const target: HTMLElement = <HTMLElement>evt.target;
+    const idAttr = target.getAttribute('id');
+    if (idAttr.match('rightArrow-') || idAttr.match('leftArrow-')) {
+      const next = idAttr.match('leftArrow') ? 1 : -1;
+      const playerId = parseInt(idAttr.split('-')[1], 10);
+      console.log('playerId', playerId);
+      console.log('next', next);
+      this.selectSpaceShip(playerId, next);
+    }
+  };
   onMonetizeProgress = () => {
     this.spaceDesc = this.spaceDesc || document.getElementById('spaceDesc');
     if (!this.spaceDesc.classList.contains('subscriber')) {
@@ -56,22 +91,15 @@ export class Menu implements IGameObject {
         'Thanks for being a Coil subscriber. You can use this ship';
     }
   };
-  selectSpaceShipControls() {
-    const leftArrowEl = document.getElementById('leftArrow');
-    const rightArrowEl = document.getElementById('rightArrow');
-    leftArrowEl.addEventListener('click', (ev) => this.selectSpaceShip(-1));
-    rightArrowEl.addEventListener('click', (ev) => this.selectSpaceShip(1));
-  }
-  selectSpaceShip(next: number) {
-    let newSpaceShipIndex = this.spaceShip.spaceshipIndex + next;
+  selectSpaceShip = (spaceShipId: number, next: number) => {
+    let newSpaceShipIndex = this.spaceShips[spaceShipId].spaceshipIndex + next;
     if (newSpaceShipIndex < 0) {
-      newSpaceShipIndex = this.spaceShip.ships.length - 1;
-    } else if (newSpaceShipIndex >= this.spaceShip.ships.length) {
+      newSpaceShipIndex = this.spaceShips[spaceShipId].ships.length - 1;
+    } else if (newSpaceShipIndex >= this.spaceShips[spaceShipId].ships.length) {
       newSpaceShipIndex = 0;
     }
-    this.spaceShip.spaceshipIndex = newSpaceShipIndex;
-    this.setSubscriptionTextVisibility(newSpaceShipIndex);
-  }
+    this.spaceShips[spaceShipId].spaceshipIndex = newSpaceShipIndex;
+  };
   setSubscriptionTextVisibility = (newSpaceShipIndex: number) => {
     this.spaceDesc = this.spaceDesc || document.getElementById('spaceDesc');
     if (newSpaceShipIndex) {
@@ -99,17 +127,21 @@ export class Menu implements IGameObject {
     }
   }
   update(dt: number): void {
-    this.sprite.update(dt);
+    this.spaceShips.forEach((ship) => {
+      ship.sprite.update(dt);
+    });
   }
   render(): void {
-    this.sprite.render();
+    this.spaceShips.forEach((ship) => {
+      ship.sprite.render();
+    });
   }
   nameChange(event: any) {
     this.userName = event.target.value;
     this.setColorFromName(this.userName);
   }
   setColorFromName(name: string) {
-    this.sprite.color = '#' + createColorFromName(name);
+    this.spaceShips[0].sprite.color = '#' + createColorFromName(name);
   }
   async setUserName(nameEl: HTMLElement) {
     await this.game.nearConnection.ready;
