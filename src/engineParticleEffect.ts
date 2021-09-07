@@ -30,10 +30,10 @@ export class EngineParticleEffect implements IGameObject {
     this.sprite = kontraSprite;
   }
 
-  coneEffect = () => {
+  coneEffect() {
     return ((1 - Math.random() * 2) / 4) * Math.sign(Math.cos(this.rotation));
-  };
-  updatePool = (dt: number) => {
+  }
+  updatePool(dt: number) {
     this.pool.get({
       x: 0,
       y: 0,
@@ -49,11 +49,11 @@ export class EngineParticleEffect implements IGameObject {
       },
     });
     this.pool.update();
-  };
-  render = () => {
+  }
+  render() {
     this.sprite.render();
-  };
-  update = (dt: number): void => {
+  }
+  update(dt: number): void {
     this.sprite.update(dt);
-  };
+  }
 }

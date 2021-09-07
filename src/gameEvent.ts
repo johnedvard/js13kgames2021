@@ -5,4 +5,6 @@ export enum GameEvent {
   hitWall = 'hw',
   startGame = 'sg',
   playerStateChange = 'psc',
+  gameOver = 'go',
+  newGame = 'ng',
 }

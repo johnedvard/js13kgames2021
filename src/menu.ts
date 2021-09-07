@@ -56,9 +56,9 @@ export class Menu implements IGameObject {
     this.handleInput();
     this.setSubscriptionTextVisibility(0);
     this.initSpaceshipSelectionUi();
-    on(MonetizeEvent.progress, this.onMonetizeProgress);
+    on(MonetizeEvent.progress, () => this.onMonetizeProgress());
   }
-  initSpaceshipSelectionUi = () => {
+  initSpaceshipSelectionUi() {
     const arrowGroupEl: HTMLElement = document.getElementById('arrowGroup');
     arrowGroupEl.addEventListener('click', (evt) => this.onArrowClicked(evt));
     for (let i = 0; i < this.game.maxPlayers; i++) {
@@ -71,8 +71,8 @@ export class Menu implements IGameObject {
       arrowGroupEl.appendChild(leftArrow);
       arrowGroupEl.appendChild(rightArrow);
     }
-  };
-  onArrowClicked = (evt: Event) => {
+  }
+  onArrowClicked(evt: Event) {
     const target: HTMLElement = <HTMLElement>evt.target;
     const idAttr = target.getAttribute('id');
     if (idAttr.match('rightArrow-') || idAttr.match('leftArrow-')) {
@@ -82,16 +82,16 @@ export class Menu implements IGameObject {
       console.log('next', next);
       this.selectSpaceShip(playerId, next);
     }
-  };
-  onMonetizeProgress = () => {
+  }
+  onMonetizeProgress() {
     this.spaceDesc = this.spaceDesc || document.getElementById('spaceDesc');
     if (!this.spaceDesc.classList.contains('subscriber')) {
       this.spaceDesc.classList.add('subscriber');
       this.spaceDesc.innerHTML =
         'Thanks for being a Coil subscriber. You can use this ship';
     }
-  };
-  selectSpaceShip = (spaceShipId: number, next: number) => {
+  }
+  selectSpaceShip(spaceShipId: number, next: number) {
     let newSpaceShipIndex = this.spaceShips[spaceShipId].spaceshipIndex + next;
     if (newSpaceShipIndex < 0) {
       newSpaceShipIndex = this.spaceShips[spaceShipId].ships.length - 1;
@@ -99,15 +99,15 @@ export class Menu implements IGameObject {
       newSpaceShipIndex = 0;
     }
     this.spaceShips[spaceShipId].spaceshipIndex = newSpaceShipIndex;
-  };
-  setSubscriptionTextVisibility = (newSpaceShipIndex: number) => {
+  }
+  setSubscriptionTextVisibility(newSpaceShipIndex: number) {
     this.spaceDesc = this.spaceDesc || document.getElementById('spaceDesc');
     if (newSpaceShipIndex) {
       this.spaceDesc.classList.remove('hide');
     } else {
       this.spaceDesc.classList.add('hide');
     }
-  };
+  }
   handleInput() {
     bindKeys(
       'm',

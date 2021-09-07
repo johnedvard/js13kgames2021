@@ -59,40 +59,14 @@ export class SpaceShip {
         } else {
           spaceShip.rotating = false;
         }
-        if (
-          spaceShip.playerState === PlayerState.dead ||
-          spaceShip.playerState === PlayerState.idle
-        ) {
-          this.dx = this.dy = 0;
-        }
         // move the ship forward in the direction it's facing
         this.x = this.x + this.dx * dt * Math.cos(this.rotation);
         this.y = this.y + this.dy * dt * Math.sin(this.rotation);
       },
     });
     this.sprite = ship;
-    on(
-      GameEvent.playerStateChange,
-      (obj: { state: PlayerState; ship: SpaceShip }) =>
-        this.onPlayerStateChange(obj)
-    );
-    if (!props.isPreview) {
-      this.handleInput();
-    }
-  }
-
-  handleInput() {
-    bindKeys(
-      'space',
-      (e) => {
-        if (
-          this.playerState !== PlayerState.tracing &&
-          this.playerState !== PlayerState.dead
-        ) {
-          emit(GameEvent.startTrace);
-        }
-      },
-      { handler: 'keyup' }
+    on(GameEvent.playerStateChange, (evt: any) =>
+      this.onPlayerStateChange(evt)
     );
   }
 

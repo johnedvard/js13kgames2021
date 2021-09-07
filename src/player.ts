@@ -50,11 +50,11 @@ class Player implements IGameObject {
       leftKey,
     });
 
-    on(GameEvent.playerRotation, this.onPayerRotation);
-    on(GameEvent.startTrace, this.onStartTrace);
-    on(GameEvent.hitTrail, this.onHitTrail);
-    on(GameEvent.hitWall, this.onHitWall);
-
+    on(GameEvent.playerRotation, (evt: any) => this.onPayerRotation(evt));
+    on(GameEvent.startTrace, () => this.onStartTrace());
+    on(GameEvent.hitTrail, (evt: any) => this.onHitTrail(evt));
+    on(GameEvent.hitWall, (evt: any) => this.onHitWall(evt));
+    on(GameEvent.gameOver, (evt: any) => this.onGameOver(evt));
     on(MonetizeEvent.progress, this.onMonetizeProgress);
 
     this.sprite = this.spaceShip.sprite;
@@ -78,7 +78,6 @@ class Player implements IGameObject {
     return [leftKey, rightKey];
   }
   onMonetizeProgress = (evt: any) => {
-    console.log('onMonetizeProgress', evt);
     if (
       this.spaceShip.spaceshipIndex !== this.playerProps.spaceShipRenderIndex
     ) {
@@ -98,7 +97,7 @@ class Player implements IGameObject {
     this.effect.render();
     this.renderDeadPlayer();
   }
-  renderTrail = () => {
+  renderTrail() {
     if (this.trails.length) {
       this.ctx.lineWidth = 3 * this.scale;
       this.ctx.beginPath();
@@ -113,7 +112,7 @@ class Player implements IGameObject {
         this.ctx.stroke();
       }
     }
-  };
+  }
   onPayerRotation = ({
     sprite,
     rotationDirection,
@@ -125,17 +124,14 @@ class Player implements IGameObject {
       this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
     }
   };
-  onStartTrace = () => {
+  onStartTrace() {
     this.sprite.dx = this.speed;
     this.sprite.dy = this.speed;
     this.setPlayerState(PlayerState.tracing);
     this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
-  };
-  onHitTrail = ({ point, go }: { point: Vector; go: Sprite }) => {
+  }
+  onHitTrail({ point, go }: { point: Vector; go: Sprite }) {
     if (go === this.sprite) {
-      if (this.playerState !== PlayerState.dead) {
-        console.log(this);
-      }
       this.setPlayerState(PlayerState.dead);
       // finish trail by adding last point
       this.trails.push(point);
@@ -144,8 +140,13 @@ class Player implements IGameObject {
       // Add point to prevent alive player from dying right after being hit, but only if not rotating
       this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
     }
-  };
-  onHitWall = ({ point, go }: { point: Vector; go: Sprite }) => {
+  }
+  onGameOver(props: { winner: Player }) {
+    if (props.winner === this) {
+      this.setPlayerState(PlayerState.idle);
+    }
+  }
+  onHitWall({ point, go }: { point: Vector; go: Sprite }) {
     if (go === this.sprite) {
       if (this.playerState !== PlayerState.dead) {
         console.log(this);
@@ -154,8 +155,8 @@ class Player implements IGameObject {
       // finish trail by adding last point
       this.trails.push(point);
     }
-  };
-  wallCollision = () => {
+  }
+  wallCollision() {
     if (
       this.playerState === PlayerState.tracing &&
       isOutOfBounds(this.game, this.sprite)
@@ -166,22 +167,29 @@ class Player implements IGameObject {
         go: this.sprite,
       });
     }
-  };
-  updateDeadPlayer = () => {
+  }
+  updateDeadPlayer() {
     if (this.playerState === PlayerState.dead) {
       // TODO create something nice
     }
-  };
-  renderDeadPlayer = () => {
+  }
+  renderDeadPlayer() {
     if (this.playerState === PlayerState.dead) {
       // TODO create something nice
     }
-  };
+  }
   setPlayerState(state: PlayerState) {
     this.playerState = state;
     emit(GameEvent.playerStateChange, { state, ship: this.spaceShip });
+    if (
+      this.playerState === PlayerState.dead ||
+      this.playerState === PlayerState.idle
+    ) {
+      this.sprite.dx = 0;
+      this.sprite.dy = 0;
+    }
   }
-  updateEngineEffect = (dt: number) => {
+  updateEngineEffect(dt: number) {
     this.effect.sprite.x = this.sprite.x - 5;
     this.effect.sprite.y = this.sprite.y - 5;
     this.effect.dx = this.sprite.dx;
@@ -189,6 +197,19 @@ class Player implements IGameObject {
     this.effect.rotation = this.sprite.rotation;
     this.effect.sprite.color = this.sprite.color;
     this.effect.update(dt);
-  };
+  }
+  resetPlayer() {
+    this.trails.length = 0;
+    this.setPlayerState(PlayerState.idle);
+    this.resetStartPos();
+  }
+  private resetStartPos() {
+    this.spaceShip.sprite.x = getRandomPos(
+      this.game.canvasWidth * this.game.scale
+    );
+    this.spaceShip.sprite.y = getRandomPos(
+      this.game.canvasHeight * this.game.scale
+    );
+  }
 }
 export { Player };
