@@ -1,20 +1,24 @@
-# Game template
+## Description
 
-This is a template that can be used in game dev projects or game jams. It's mainly focused on TypeScript and webpack projects.
+This game is heavily inspired by Achtung, die Kurve!
 
-## How to use
+It's a 4 player local multiplayer game. You control a spaceship, and need to stay alive as long as possible before there's no space to navigate. You die if you hit a player's trail or any of the walls.
 
-This template comes with many optional dependencies. These are added for convenience because I personally like to use them. If you don't feel like using Near, or Kontra, just ignore them, remove them or replace them.
+### Player controls:
 
-```
-npm run install
-npmrun start
-```
+- p1: left arrow, right arrow
+- p2: q, a
+- p3: v, b
+- p4: o, p
 
-## Monetization
+### Web Monetization challenge:
 
-This template includes web monetization. Change the payment pointer to your own, or support me by using the default one
+You can select additional space ship skins for your ship.
 
-## Decentralized app (dapp)
+### NEAR challenge:
 
-This template is using Near. Replace all dev-1618829854588-2430734 (my own testnet) with your own testnet Near smart contract id
+You can write your name, and it will be stored on the smart contract. The name also determines the color of your spaceship if you are logged in to NEAR's wallet.
+
+### Protocol labs challenge:
+
+The three other ships' color are chosen based on Drand. They all start with a default color, but the color will change if the client receives a response from Drand before a round har started.
