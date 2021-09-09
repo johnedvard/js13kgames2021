@@ -12,6 +12,7 @@ import { GameEvent } from './gameEvent';
 import { createColorFromName } from './gameUtils';
 import { PlayerState } from './playerState';
 import { DeadFeedback } from './deadFeedback';
+import { playSong } from './sound';
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -112,6 +113,7 @@ export class Game {
     });
   }
   async onStartGame(props: { spaceShipRenderIndices: number[] }) {
+    playSong();
     this.isGameStarted = true;
     if (this.gos.includes(this.menu)) {
       this.gos.splice(this.gos.indexOf(this.menu), 1);

@@ -4,6 +4,7 @@ import { Game } from './game';
 import { GameEvent } from './gameEvent';
 import { IGameObject } from './iGameobject';
 import { PlayerState } from './playerState';
+import { playDead } from './sound';
 import { SpaceShip } from './spaceShip';
 
 export class DeadFeedback implements IGameObject {
@@ -16,6 +17,7 @@ export class DeadFeedback implements IGameObject {
   }
   onPlayerStateChange(evt: { state: PlayerState; ship: SpaceShip }) {
     if (evt.state === PlayerState.dead) {
+      playDead();
       this.isRender = true;
       setTimeout(() => {
         this.isRender = false;

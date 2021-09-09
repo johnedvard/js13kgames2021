@@ -162,14 +162,16 @@ class Player implements IGameObject {
     }
   }
   setPlayerState(state: PlayerState) {
-    this.playerState = state;
-    emit(GameEvent.playerStateChange, { state, ship: this.spaceShip });
-    if (
-      this.playerState === PlayerState.dead ||
-      this.playerState === PlayerState.idle
-    ) {
-      this.sprite.dx = 0;
-      this.sprite.dy = 0;
+    if (this.playerState !== state) {
+      this.playerState = state;
+      emit(GameEvent.playerStateChange, { state, ship: this.spaceShip });
+      if (
+        this.playerState === PlayerState.dead ||
+        this.playerState === PlayerState.idle
+      ) {
+        this.sprite.dx = 0;
+        this.sprite.dy = 0;
+      }
     }
   }
   updateEngineEffect(dt: number) {
