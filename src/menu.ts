@@ -2,7 +2,7 @@ import { Game } from './game';
 import { IGameObject } from './iGameobject';
 import { Sprite } from '../kontra/kontra';
 import { emit, on } from '../kontra/src/events';
-import { createColorFromName } from './gameUtils';
+import { createColorFromName, getPlayerControls } from './gameUtils';
 import { GameEvent } from './gameEvent';
 import { SpaceShip } from './spaceShip';
 import { PlayerState } from './playerState';
@@ -27,13 +27,15 @@ export class Menu implements IGameObject {
             ? '#' + createColorFromName(game.extraPlayerNames[id - 1])
             : '',
       };
+      const [leftKey, rightKey] = getPlayerControls(id);
       return new SpaceShip(this.game, PlayerState.idle, {
         scale: scale || 1,
         spriteProps: { ...spriteProps },
         isPreview: true,
+        leftKey,
+        rightKey,
       });
     });
-    console.log('this.spaceShips', this.spaceShips);
     this.menuEl = document.getElementById('menu');
 
     const nameEl = document.getElementById('name');
@@ -57,6 +59,21 @@ export class Menu implements IGameObject {
     this.setSubscriptionTextVisibility(0);
     this.initSpaceshipSelectionUi();
     on(MonetizeEvent.progress, () => this.onMonetizeProgress());
+    window.addEventListener(
+      'drand',
+      (e: any) => {
+        this.setNewPlayerNames(e.detail);
+      },
+      false
+    );
+  }
+  setNewPlayerNames(colorNames: string[]) {
+    this.spaceShips.forEach((ship, index) => {
+      // ignore player 1
+      if (index > 0) {
+        ship.sprite.color = '#' + createColorFromName(colorNames[index - 1]);
+      }
+    });
   }
   initSpaceshipSelectionUi() {
     const arrowGroupEl: HTMLElement = document.getElementById('arrowGroup');

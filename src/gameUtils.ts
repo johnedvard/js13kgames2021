@@ -52,3 +52,21 @@ export const createColorFromName = (name: string) => {
 export const getRandomPos = (widthOrHeight: number) => {
   return 80 + Math.random() * (widthOrHeight - 160);
 };
+
+export const getPlayerControls = (playerId: number): string[] => {
+  let leftKey = 'left';
+  let rightKey = 'right';
+  if (playerId === 1) {
+    leftKey = 'q';
+    rightKey = 'w';
+  }
+  if (playerId === 2) {
+    leftKey = 'v';
+    rightKey = 'b';
+  }
+  if (playerId === 3) {
+    leftKey = 'o';
+    rightKey = 'p';
+  }
+  return [leftKey, rightKey];
+};

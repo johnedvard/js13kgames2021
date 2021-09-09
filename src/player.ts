@@ -4,7 +4,7 @@ import { emit, on } from '../kontra/src/events';
 import { GameEvent } from './gameEvent';
 import KontraVector from '../kontra/src/vector';
 import { Game } from './game';
-import { getRandomPos, isOutOfBounds } from './gameUtils';
+import { getPlayerControls, getRandomPos, isOutOfBounds } from './gameUtils';
 import { Vector, Sprite } from '../kontra/kontra';
 import { SpaceShip } from './spaceShip';
 import { MonetizeEvent } from './monetizeEvent';
@@ -41,7 +41,7 @@ class Player implements IGameObject {
       y: getRandomPos(this.game.canvasHeight * this.game.scale),
       color: this.playerProps.color || '#000',
     };
-    const [leftKey, rightKey] = this.setPlayerControls();
+    const [leftKey, rightKey] = getPlayerControls(this.playerId);
     this.spaceShip = new SpaceShip(this.game, this.playerState, {
       scale: this.scale,
       spriteProps,
@@ -59,23 +59,6 @@ class Player implements IGameObject {
 
     this.sprite = this.spaceShip.sprite;
     addPlayer(this);
-  }
-  setPlayerControls(): string[] {
-    let leftKey = 'left';
-    let rightKey = 'right';
-    if (this.playerProps.playerId === 1) {
-      leftKey = 'q';
-      rightKey = 'w';
-    }
-    if (this.playerProps.playerId === 2) {
-      leftKey = 'v';
-      rightKey = 'b';
-    }
-    if (this.playerProps.playerId === 3) {
-      leftKey = 'o';
-      rightKey = 'p';
-    }
-    return [leftKey, rightKey];
   }
   onMonetizeProgress = (evt: any) => {
     if (

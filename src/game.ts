@@ -23,10 +23,7 @@ export class Game {
   scale: number;
   canvasWidth = 800;
   canvasHeight = 600;
-  player2Name = 'e500ff';
-  player3Name = '814007';
-  player4Name = '1d34fa';
-  extraPlayerNames = [this.player2Name, this.player3Name, this.player4Name];
+  extraPlayerNames = ['e500ff', '814007', '1d34fa'];
   maxPlayers = 4;
   players: Player[] = [];
   isGameOver = false;
@@ -48,6 +45,18 @@ export class Game {
     this.gos.push(new DeadFeedback(this));
     on(GameEvent.startGame, (props: any) => this.onStartGame(props));
     on(GameEvent.newGame, (props: any) => this.onNewGame(props));
+    window.addEventListener(
+      'drand',
+      (e: any) => {
+        this.setNewPlayerNames(e.detail);
+      },
+      false
+    );
+  }
+  setNewPlayerNames(colorNames: string[]) {
+    colorNames.forEach((cn, index) => {
+      this.extraPlayerNames[index] = cn;
+    });
   }
   handleGameInput() {
     bindKeys(
