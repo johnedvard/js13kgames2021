@@ -131,9 +131,6 @@ class Player implements IGameObject {
   }
   onHitWall({ point, go }: { point: Vector; go: Sprite }) {
     if (go === this.sprite) {
-      if (this.playerState !== PlayerState.dead) {
-        console.log(this);
-      }
       this.setPlayerState(PlayerState.dead);
       // finish trail by adding last point
       this.trails.push(point);

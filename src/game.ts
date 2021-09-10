@@ -12,7 +12,7 @@ import { GameEvent } from './gameEvent';
 import { createColorFromName } from './gameUtils';
 import { PlayerState } from './playerState';
 import { DeadFeedback } from './deadFeedback';
-import { playSong } from './sound';
+import { playSong, toggleSond } from './sound';
 
 export class Game {
   canvas: HTMLCanvasElement;
@@ -63,19 +63,23 @@ export class Game {
     bindKeys(
       'space',
       (e) => {
-        console.log('space bounded');
         if (this.isGameOver) {
-          console.log('emit new game ');
           emit(GameEvent.newGame, {});
         } else if (this.isGameStarted && !this.isGameOver) {
           if (
             this.players.filter((p) => p.playerState === PlayerState.idle)
               .length === this.players.length
           ) {
-            console.log('start trace');
             emit(GameEvent.startTrace);
           }
         }
+      },
+      { handler: 'keyup' }
+    );
+    bindKeys(
+      'n',
+      (e) => {
+        toggleSond();
       },
       { handler: 'keyup' }
     );

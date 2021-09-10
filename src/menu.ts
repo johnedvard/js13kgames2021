@@ -95,8 +95,6 @@ export class Menu implements IGameObject {
     if (idAttr.match('rightArrow-') || idAttr.match('leftArrow-')) {
       const next = idAttr.match('leftArrow') ? 1 : -1;
       const playerId = parseInt(idAttr.split('-')[1], 10);
-      console.log('playerId', playerId);
-      console.log('next', next);
       this.selectSpaceShip(playerId, next);
     }
   }

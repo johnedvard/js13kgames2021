@@ -3,7 +3,7 @@ const zzfxV=.3;
 // zzfxR - global sample rate
 const zzfxR=44100;
 // zzfxX - the common audio context
-const zzfxX=new(window.AudioContext||webkitAudioContext);
+export const zzfxX =new(window.AudioContext||webkitAudioContext);
 // zzfx() - the universal entry point -- returns a AudioBufferSourceNode
 export const zzfx=(...t)=>zzfxP(zzfxG(...t));
 

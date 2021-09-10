@@ -27,7 +27,7 @@ export class DeadFeedback implements IGameObject {
   update(dt: number) {}
   render() {
     if (this.isRender) {
-      this.game.ctx.fillStyle = 'black';
+      this.game.ctx.fillStyle = 'gray';
       this.game.ctx.fillRect(
         0,
         0,
