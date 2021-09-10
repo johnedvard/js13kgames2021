@@ -29,9 +29,11 @@ export const playDead = () => {
 export const playSong = () => {
   const song = [[[,0,400,,.02,.5,,,,.1,,.1,,,,,,,.01],[,0]],[[[,,4,,,,4,,,,2,,,,4,,,,2,,,,4,,,,2,,,,4,,,,2,,,,4,,,,2,,,,4,,,,2,,,,4,,,,,,,,,,,,],[1,1,5,7,9,7,9,7,,7,,7,,7,,7,9,7,9,7,9,7,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,],[,-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,],[,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,]]],[0],,{"title":"New Song","instruments":["Instrument 0","Instrument 1"],"patterns":["Pattern 0"]}]
   let mySongData = zzfxM(...song);
-
+  
+  
   // Play the song (returns a AudioBufferSourceNode)
   let myAudioNode = zzfxP(...mySongData);
+  myAudioNode.loop = true
 
   // Stop the song
   // myAudioNode.stop();
