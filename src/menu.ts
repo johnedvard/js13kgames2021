@@ -56,7 +56,7 @@ export class Menu implements IGameObject {
     });
 
     this.handleInput();
-    this.setSubscriptionTextVisibility(0);
+    this.setSubscriptionTextVisibility(true);
     this.initSpaceshipSelectionUi();
     on(MonetizeEvent.progress, () => this.onMonetizeProgress());
     window.addEventListener(
@@ -103,7 +103,7 @@ export class Menu implements IGameObject {
     if (!this.spaceDesc.classList.contains('subscriber')) {
       this.spaceDesc.classList.add('subscriber');
       this.spaceDesc.innerHTML =
-        'Thanks for being a Coil subscriber. You can use this ship';
+        'Thanks for being a Coil subscriber  &#128081; You can select any space ship';
     }
   }
   selectSpaceShip(spaceShipId: number, next: number) {
@@ -115,9 +115,9 @@ export class Menu implements IGameObject {
     }
     this.spaceShips[spaceShipId].spaceshipIndex = newSpaceShipIndex;
   }
-  setSubscriptionTextVisibility(newSpaceShipIndex: number) {
+  setSubscriptionTextVisibility(show: boolean) {
     this.spaceDesc = this.spaceDesc || document.getElementById('spaceDesc');
-    if (newSpaceShipIndex) {
+    if (show) {
       this.spaceDesc.classList.remove('hide');
     } else {
       this.spaceDesc.classList.add('hide');

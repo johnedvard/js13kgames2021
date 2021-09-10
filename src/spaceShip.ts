@@ -1,9 +1,10 @@
 import { Sprite } from '../kontra/kontra';
 import { emit, on } from '../kontra/src/events';
-import { bindKeys, keyPressed } from '../kontra/src/keyboard';
+import { keyPressed } from '../kontra/src/keyboard';
 import KontraSprite from '../kontra/src/sprite';
 import { Game } from './game';
 import { GameEvent } from './gameEvent';
+import { MonetizeEvent } from './monetizeEvent';
 import { PlayerState } from './playerState';
 import { spaceShipRenderers } from './spaceShipRenderers';
 
@@ -14,6 +15,7 @@ export class SpaceShip {
   spaceshipIndex = 0;
   ships: any[] = [...spaceShipRenderers];
   rotating = false;
+  isSubscriber = false;
   constructor(
     private game: Game,
     private playerState: PlayerState,
@@ -39,7 +41,7 @@ export class SpaceShip {
       anchor: { x: 0.1, y: 0.5 },
       rotation: -Math.PI / 2,
       render: function () {
-        spaceShip.renderSpaceShip(this);
+        spaceShip.renderSpaceShip(this, spaceShip.isSubscriber);
       },
       update: function (dt: number) {
         if (keyPressed(spaceShip.leftKey)) {
@@ -68,6 +70,10 @@ export class SpaceShip {
     on(GameEvent.playerStateChange, (evt: any) =>
       this.onPlayerStateChange(evt)
     );
+    on(MonetizeEvent.progress, () => this.onMonetizeProgress());
+  }
+  onMonetizeProgress() {
+    this.isSubscriber = true;
   }
 
   onPlayerStateChange(evt: { state: PlayerState; ship: SpaceShip }) {
@@ -76,9 +82,9 @@ export class SpaceShip {
     }
   }
 
-  renderSpaceShip(sprite: Sprite) {
+  renderSpaceShip(sprite: Sprite, isSubscriber = false) {
     if (this.playerState !== PlayerState.dead) {
-      spaceShipRenderers[this.spaceshipIndex](sprite);
+      spaceShipRenderers[this.spaceshipIndex](sprite,isSubscriber);
     }
   }
 }
