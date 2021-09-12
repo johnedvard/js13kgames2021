@@ -1,5 +1,4 @@
 export enum GameEvent {
-  playerRotation = 'pr',
   startTrace = 'st',
   hitTrail = 'ht',
   hitWall = 'hw',
@@ -7,4 +6,6 @@ export enum GameEvent {
   playerStateChange = 'psc',
   gameOver = 'go',
   newGame = 'ng',
+  weaponAttack = 'wa',
+  bulletHitTrail = 'bht',
 }

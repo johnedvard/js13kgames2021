@@ -7,7 +7,7 @@ import { Player } from './player';
 
 // TODO (johnedvard) don't hardcode players
 const players: Player[] = [null, null, null, null];
-export const playerTrails: Vector[][] = [[], [], [], []];
+export const playerTrails: Vector[][][] = [[[]], [[]], [[]], [[]]]; // playerIds with a list of line segments.
 /**
  * Used to add the player's latest position to the trail before checking intersection
  */
@@ -15,38 +15,51 @@ export const addPlayer = (player: Player) => {
   players[player.playerId] = player;
 };
 /**
- * Check if player hits own trail
+ * Check if player hits any trail
  */
 export const checkLineIntersection = (goPoint: Vector, go: Sprite) => {
+  if (!goPoint || !go) return;
   const lastPoint = goPoint;
   const lastPoint2 = KontraVector(go.x, go.y);
 
-  playerTrails.forEach((trails, index) => {
-    const points = [...trails];
-    if (players[index].sprite !== go) {
-      points.push(
-        KontraVector(players[index].sprite.x, players[index].sprite.y)
-      );
-    }
-    for (let i = 0; i < points.length - 1; i++) {
-      const point = points[i];
-      const point2 = points[i + 1];
+  playerTrails.forEach((trails, playerId) => {
+    trails.forEach((lineSegment, segmentIndex) => {
+      const points = [...lineSegment];
       if (
-        point !== lastPoint &&
-        point !== lastPoint2 &&
-        point2 !== lastPoint2 &&
-        point2 !== lastPoint
+        players[playerId].sprite !== go &&
+        segmentIndex === trails.length - 1
       ) {
-        const intersection = lineIntersection(
-          point,
-          point2,
-          lastPoint,
-          lastPoint2
+        // Add player pos if last line segment
+        points.push(
+          KontraVector(players[playerId].sprite.x, players[playerId].sprite.y)
         );
-        if (intersection) {
-          emit(GameEvent.hitTrail, { point: intersection, go });
+      }
+      for (let i = 0; i < points.length - 1; i++) {
+        const point = points[i];
+        const point2 = points[i + 1];
+        if (
+          point !== lastPoint &&
+          point !== lastPoint2 &&
+          point2 !== lastPoint2 &&
+          point2 !== lastPoint
+        ) {
+          const intersection = lineIntersection(
+            point,
+            point2,
+            lastPoint,
+            lastPoint2
+          );
+          if (intersection) {
+            emit(GameEvent.hitTrail, {
+              point: intersection,
+              go,
+              playerId: playerId,
+              trailIndex: i,
+              segmentIndex,
+            });
+          }
         }
       }
-    }
+    });
   });
 };

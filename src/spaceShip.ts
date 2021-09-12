@@ -12,6 +12,7 @@ export class SpaceShip {
   sprite: Sprite;
   rightKey = 'right';
   leftKey = 'left';
+  weaponKey = 'up';
   spaceshipIndex = 0;
   ships: any[] = [...spaceShipRenderers];
   rotating = false;
@@ -25,10 +26,12 @@ export class SpaceShip {
       isPreview: boolean;
       leftKey?: string;
       rightKey?: string;
+      weaponKey?: string;
     }
   ) {
     this.rightKey = props.rightKey || this.rightKey;
     this.leftKey = props.leftKey || this.leftKey;
+    this.weaponKey = props.weaponKey || this.weaponKey;
     const spaceShip = this;
     const rotationSpeed = 5;
     const ship: any = KontraSprite({
@@ -46,17 +49,9 @@ export class SpaceShip {
       update: function (dt: number) {
         if (keyPressed(spaceShip.leftKey)) {
           this.rotation -= rotationSpeed * dt;
-          emit(GameEvent.playerRotation, {
-            rotationDirection: -1,
-            sprite: spaceShip.sprite,
-          });
           spaceShip.rotating = true;
         } else if (keyPressed(spaceShip.rightKey)) {
           this.rotation += rotationSpeed * dt;
-          emit(GameEvent.playerRotation, {
-            rotationDirection: 1,
-            sprite: spaceShip.sprite,
-          });
           spaceShip.rotating = true;
         } else {
           spaceShip.rotating = false;
@@ -84,7 +79,7 @@ export class SpaceShip {
 
   renderSpaceShip(sprite: Sprite, isSubscriber = false) {
     if (this.playerState !== PlayerState.dead) {
-      spaceShipRenderers[this.spaceshipIndex](sprite,isSubscriber);
+      spaceShipRenderers[this.spaceshipIndex](sprite, isSubscriber);
     }
   }
 }

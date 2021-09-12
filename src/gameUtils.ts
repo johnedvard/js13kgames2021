@@ -56,17 +56,21 @@ export const getRandomPos = (widthOrHeight: number) => {
 export const getPlayerControls = (playerId: number): string[] => {
   let leftKey = 'left';
   let rightKey = 'right';
+  let weaponKey = 'up';
   if (playerId === 1) {
     leftKey = 'q';
     rightKey = 'w';
+    weaponKey = 'e';
   }
   if (playerId === 2) {
     leftKey = 'v';
     rightKey = 'b';
+    weaponKey = 'n';
   }
   if (playerId === 3) {
-    leftKey = 'o';
-    rightKey = 'p';
+    leftKey = 'i';
+    rightKey = 'o';
+    weaponKey = 'p';
   }
-  return [leftKey, rightKey];
+  return [leftKey, rightKey, weaponKey];
 };

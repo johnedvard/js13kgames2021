@@ -1,3 +1,5 @@
+// https://github.com/KilledByAPixel/ZzFX
+// https://github.com/keithclark/ZzFXM
 // zzfxV - global volume
 const zzfxV=.3;
 // zzfxR - global sample rate

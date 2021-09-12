@@ -6,7 +6,6 @@ import { createColorFromName, getPlayerControls } from './gameUtils';
 import { GameEvent } from './gameEvent';
 import { SpaceShip } from './spaceShip';
 import { PlayerState } from './playerState';
-import { bindKeys } from '../kontra/src/keyboard';
 import { MonetizeEvent } from './monetizeEvent';
 
 export class Menu implements IGameObject {
@@ -27,13 +26,14 @@ export class Menu implements IGameObject {
             ? '#' + createColorFromName(game.extraPlayerNames[id - 1])
             : '',
       };
-      const [leftKey, rightKey] = getPlayerControls(id);
+      const [leftKey, rightKey, weaponKey] = getPlayerControls(id);
       return new SpaceShip(this.game, PlayerState.idle, {
         scale: scale || 1,
         spriteProps: { ...spriteProps },
         isPreview: true,
         leftKey,
         rightKey,
+        weaponKey,
       });
     });
     this.menuEl = document.getElementById('menu');
@@ -55,7 +55,6 @@ export class Menu implements IGameObject {
       });
     });
 
-    this.handleInput();
     this.setSubscriptionTextVisibility(true);
     this.initSpaceshipSelectionUi();
     on(MonetizeEvent.progress, () => this.onMonetizeProgress());
@@ -122,15 +121,6 @@ export class Menu implements IGameObject {
     } else {
       this.spaceDesc.classList.add('hide');
     }
-  }
-  handleInput() {
-    bindKeys(
-      'm',
-      (e) => {
-        this.toggleMenu();
-      },
-      { handler: 'keyup' }
-    );
   }
   toggleMenu() {
     if (this.menuEl.classList.contains('out')) {

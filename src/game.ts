@@ -77,7 +77,7 @@ export class Game {
       { handler: 'keyup' }
     );
     bindKeys(
-      'n',
+      'm',
       (e) => {
         toggleSond();
       },

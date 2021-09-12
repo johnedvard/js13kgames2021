@@ -10,17 +10,24 @@ import { SpaceShip } from './spaceShip';
 import { MonetizeEvent } from './monetizeEvent';
 import { EngineParticleEffect } from './engineParticleEffect';
 import { addPlayer, checkLineIntersection, playerTrails } from './trails';
+import { bindKeys } from '../kontra/src/keyboard';
+import { Bullet } from './bullet';
 
 class Player implements IGameObject {
   sprite: Sprite;
   spaceShip: SpaceShip;
   playerState: PlayerState = PlayerState.idle;
-  trails: Vector[];
+  trails: Vector[][] = []; // list of line segments
   ctx: CanvasRenderingContext2D;
   speed: number;
   effect: EngineParticleEffect;
   playerId: number;
   rotating = false;
+  maxBullets = 1;
+  numBullets = this.maxBullets;
+  bullets: Bullet[] = [];
+  timeToAddTrailInterval = 0.05; //s
+  timeSinceLastTrailAdded = 0;
   constructor(
     private game: Game,
     private scale: number,
@@ -35,13 +42,14 @@ class Player implements IGameObject {
     this.effect = new EngineParticleEffect();
     this.speed = 100 * this.scale;
     this.trails = playerTrails[this.playerProps.playerId];
+    this.getEndTrail();
     this.ctx = this.game.ctx;
     const spriteProps = {
       x: getRandomPos(this.game.canvasWidth * this.game.scale),
       y: getRandomPos(this.game.canvasHeight * this.game.scale),
       color: this.playerProps.color || '#000',
     };
-    const [leftKey, rightKey] = getPlayerControls(this.playerId);
+    const [leftKey, rightKey, weaponKey] = getPlayerControls(this.playerId);
     this.spaceShip = new SpaceShip(this.game, this.playerState, {
       scale: this.scale,
       spriteProps,
@@ -50,7 +58,17 @@ class Player implements IGameObject {
       leftKey,
     });
 
-    on(GameEvent.playerRotation, (evt: any) => this.onPayerRotation(evt));
+    bindKeys(
+      weaponKey,
+      (e) => {
+        emit(GameEvent.weaponAttack, {
+          sprite: this.spaceShip.sprite,
+        });
+      },
+      { handler: 'keyup' }
+    );
+
+    on(GameEvent.weaponAttack, (evt: any) => this.onPayerAttack(evt));
     on(GameEvent.startTrace, () => this.onStartTrace());
     on(GameEvent.hitTrail, (evt: any) => this.onHitTrail(evt));
     on(GameEvent.hitWall, (evt: any) => this.onHitWall(evt));
@@ -60,6 +78,23 @@ class Player implements IGameObject {
     this.sprite = this.spaceShip.sprite;
     addPlayer(this);
   }
+  onPayerAttack(evt: { sprite: Sprite }) {
+    if (
+      evt.sprite == this.sprite &&
+      this.game.isGameStarted &&
+      !this.game.isGameOver &&
+      this.numBullets > 0
+    ) {
+      console.log('shoot bullet');
+      const x = this.sprite.x;
+      const y = this.sprite.y;
+      const rotation = this.sprite.rotation;
+      const color = this.sprite.color;
+
+      this.bullets.push(new Bullet(this.game, { x, y, rotation, color }));
+      --this.numBullets;
+    }
+  }
   onMonetizeProgress = (evt: any) => {
     if (
       this.spaceShip.spaceshipIndex !== this.playerProps.spaceShipRenderIndex
@@ -68,61 +103,101 @@ class Player implements IGameObject {
     }
   };
   update(dt: number): void {
+    this.addPointToTrail(dt);
     this.sprite.update(dt);
-    checkLineIntersection(this.trails[this.trails.length - 1], this.sprite);
+    checkLineIntersection(this.getLastTrailPoint(), this.sprite);
     this.updateEngineEffect(dt);
     this.wallCollision();
     this.updateDeadPlayer();
+    this.bullets.forEach((b) => b.update(dt));
   }
   render(): void {
     this.renderTrail();
     this.sprite.render();
     this.effect.render();
     this.renderDeadPlayer();
+    this.bullets.forEach((b) => b.render());
   }
-  renderTrail() {
-    if (this.trails.length) {
-      this.ctx.lineWidth = 3 * this.scale;
-      this.ctx.beginPath();
-      this.ctx.moveTo(this.trails[0].x, this.trails[0].y);
-      this.ctx.strokeStyle = this.playerProps.color || '#000';
-      this.trails.forEach((t) => {
-        this.ctx.lineTo(t.x, t.y);
-      });
-      this.ctx.stroke();
-      if (this.playerState !== PlayerState.dead) {
-        this.ctx.lineTo(this.sprite.x, this.sprite.y);
-        this.ctx.stroke();
+  addPointToTrail(dt: number) {
+    if (this.playerState === PlayerState.tracing) {
+      this.timeSinceLastTrailAdded += dt;
+      if (this.timeSinceLastTrailAdded >= this.timeToAddTrailInterval) {
+        this.getEndTrail().push(KontraVector(this.sprite.x, this.sprite.y));
+        this.timeSinceLastTrailAdded = 0;
       }
     }
   }
-  onPayerRotation = ({
-    sprite,
-    rotationDirection,
-  }: {
-    sprite: Sprite;
-    rotationDirection: number;
-  }) => {
-    if (sprite === this.sprite && this.playerState === PlayerState.tracing) {
-      this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
+  renderTrail() {
+    if (this.trails.length) {
+      this.ctx.save();
+      this.ctx.globalCompositeOperation = 'source-over';
+      this.ctx.lineWidth = 3 * this.scale;
+      this.ctx.beginPath();
+      this.trails.forEach((segment, index) => {
+        if (!segment || !segment.length) return;
+        this.ctx.moveTo(segment[0].x, segment[0].y);
+        this.ctx.strokeStyle = this.playerProps.color || '#000';
+        segment.forEach((t) => {
+          this.ctx.lineTo(t.x, t.y);
+        });
+        this.ctx.stroke();
+        // Draw to player head on last segment
+        if (
+          this.playerState !== PlayerState.dead &&
+          index === this.trails.length - 1
+        ) {
+          this.ctx.lineTo(this.sprite.x, this.sprite.y);
+          this.ctx.stroke();
+        }
+      });
+      this.ctx.restore();
     }
-  };
+  }
   onStartTrace() {
     this.sprite.dx = this.speed;
     this.sprite.dy = this.speed;
     this.setPlayerState(PlayerState.tracing);
-    this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
+    this.getEndTrail().push(KontraVector(this.sprite.x, this.sprite.y));
   }
-  onHitTrail({ point, go }: { point: Vector; go: Sprite }) {
+  onHitTrail({
+    point,
+    go,
+    playerId,
+    trailIndex,
+    segmentIndex,
+  }: {
+    point: Vector;
+    go: Sprite;
+    playerId: number;
+    trailIndex: number;
+    segmentIndex: number;
+  }) {
     if (go === this.sprite) {
       this.setPlayerState(PlayerState.dead);
       // finish trail by adding last point
-      this.trails.push(point);
+      this.getEndTrail().push(point);
     }
     if (!this.spaceShip.rotating) {
       // Add point to prevent alive player from dying right after being hit, but only if not rotating
-      this.trails.push(KontraVector(this.sprite.x, this.sprite.y));
+      this.getEndTrail().push(KontraVector(this.sprite.x, this.sprite.y));
     }
+    if (playerId === this.playerId) {
+      this.splitLineSegment({ segmentIndex, trailIndex });
+    }
+  }
+  splitLineSegment({ segmentIndex, trailIndex }: any) {
+    const orgSegment = [...this.trails[segmentIndex]];
+    this.trails[segmentIndex].length = 0;
+    const newTrail = [];
+    const numPointsToRemove = 3;
+    for (let i = 0; i < orgSegment.length; i++) {
+      if (i < trailIndex - numPointsToRemove) {
+        this.trails[segmentIndex].push(orgSegment[i]);
+      } else if (i > trailIndex + numPointsToRemove) {
+        newTrail.push(orgSegment[i]);
+      }
+    }
+    this.trails.push(newTrail);
   }
   onGameOver(props: { winner: Player }) {
     if (props.winner === this) {
@@ -133,7 +208,7 @@ class Player implements IGameObject {
     if (go === this.sprite) {
       this.setPlayerState(PlayerState.dead);
       // finish trail by adding last point
-      this.trails.push(point);
+      this.getEndTrail().push(point);
     }
   }
   wallCollision() {
@@ -181,9 +256,20 @@ class Player implements IGameObject {
     this.effect.update(dt);
   }
   resetPlayer() {
-    this.trails.length = 0;
+    this.trails.splice(0, this.trails.length, []); // remove all segments
+
+    this.numBullets = this.maxBullets;
     this.setPlayerState(PlayerState.idle);
     this.resetStartPos();
+  }
+  // The last trail of all line segments
+  getEndTrail(): Vector[] {
+    return this.trails[this.trails.length - 1];
+  }
+  getLastTrailPoint(): Vector {
+    if (this.getEndTrail()) {
+      return this.getEndTrail()[this.getEndTrail().length - 1];
+    }
   }
   private resetStartPos() {
     this.spaceShip.sprite.x = getRandomPos(

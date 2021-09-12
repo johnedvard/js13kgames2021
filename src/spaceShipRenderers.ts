@@ -1,16 +1,22 @@
 import { Sprite } from '../kontra/kontra';
 
+let spriteShipImg: HTMLImageElement;
+
 const renderXmark = (sprite: Sprite, isSubscriber = false) => {
-  if(isSubscriber) return;
-  sprite.context.strokeStyle = '#00000055';
+  if (isSubscriber) return;
+  sprite.context.strokeStyle = '#000000aa';
   const padding = 10;
   sprite.context.moveTo(-padding, -padding);
   sprite.context.lineTo(sprite.width + padding, sprite.height + padding);
   sprite.context.moveTo(-padding, sprite.height + padding);
   sprite.context.lineTo(sprite.width + padding, padding);
   sprite.context.stroke();
-}
-export const renderDefaultSpaceShip = (sprite: Sprite, isSubscriber = false, isHollow = false) => {
+};
+export const renderDefaultSpaceShip = (
+  sprite: Sprite,
+  isSubscriber = false,
+  isHollow = false
+) => {
   sprite.context.fillStyle = sprite.color;
   sprite.context.strokeStyle = sprite.color;
   sprite.context.lineWidth = 4;
@@ -26,6 +32,27 @@ export const renderDefaultSpaceShip = (sprite: Sprite, isSubscriber = false, isH
   } else {
     sprite.context.fill();
   }
+};
+
+export const renderSpriteShip = (sprite: Sprite, isSubscriber = false) => {
+  if (spriteShipImg) {
+    sprite.context.drawImage(
+      spriteShipImg,
+      0,
+      -sprite.anchor.x * sprite.height,
+      sprite.width,
+      sprite.height
+    );
+    renderXmark(sprite, isSubscriber);
+    sprite.image = spriteShipImg;
+    return;
+  }
+  let image = new Image();
+  image.src = 'assets/spaceship.png';
+  image.onload = function () {
+    sprite.image = image;
+    spriteShipImg = image;
+  };
 };
 
 export const renderCoolDefaultSpaceShip = (
@@ -55,6 +82,10 @@ export const renderCoolDefaultSpaceShip = (
 export const spaceShipRenderers: any[] = [
   renderDefaultSpaceShip,
   renderCoolDefaultSpaceShip,
-  (sprite: Sprite, isSubscriber: boolean) => renderDefaultSpaceShip(sprite,isSubscriber, true),
-  (sprite: Sprite, isSubscriber: boolean) => renderCoolDefaultSpaceShip(sprite,isSubscriber, true),
+  (sprite: Sprite, isSubscriber: boolean) =>
+    renderDefaultSpaceShip(sprite, isSubscriber, true),
+  (sprite: Sprite, isSubscriber: boolean) =>
+    renderCoolDefaultSpaceShip(sprite, isSubscriber, true),
+  (sprite: Sprite, isSubscriber: boolean) =>
+    renderSpriteShip(sprite, isSubscriber),
 ];
