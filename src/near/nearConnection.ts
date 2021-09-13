@@ -92,13 +92,20 @@ export class NearConnection {
       return Promise.resolve(this.userName);
     }
     const accountId = this.accountId;
-    return (<any>this.contract).getName({ accountId }).then((res: string) => {
-      if (res && res.match(/[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/g)) {
-        this.userName = 'Invalid username';
-      } else {
-        this.userName = res;
-      }
-      return res;
+    return new Promise((resolve, reject) => {
+      (<any>this.contract)
+        .getName({ accountId })
+        .then((res: string) => {
+          if (res && res.match(/[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/g)) {
+            this.userName = 'Invalid username';
+          } else {
+            this.userName = res;
+          }
+          resolve(res);
+        })
+        .catch((err: any) => {
+          reject(err);
+        });
     });
   }
 }

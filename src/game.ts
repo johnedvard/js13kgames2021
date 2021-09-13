@@ -126,7 +126,7 @@ export class Game {
         color:
           id > 0
             ? '#' + createColorFromName(this.extraPlayerNames[id - 1])
-            : '#' + createColorFromName(props.userName || 'No_Name'),
+            : '#' + createColorFromName('No_Name'),
         isAi: false,
         spaceShipRenderIndex: props.spaceShipRenderIndices[id],
         playerId: id,
