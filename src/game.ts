@@ -30,6 +30,7 @@ export class Game {
   isGameOver = false;
   isGameStarted = false;
   nearConnection: NearConnection;
+  isLoading = false;
   constructor(canvas: HTMLCanvasElement) {
     this.initNear();
     this.canvas = canvas;
@@ -117,7 +118,9 @@ export class Game {
     });
   }
   async onStartGame(props: { spaceShipRenderIndices: number[] }) {
-    playSong();
+    this.isLoading = true;
+    await playSong();
+    this.isLoading = false;
     this.isGameStarted = true;
     if (this.gos.includes(this.menu)) {
       this.gos.splice(this.gos.indexOf(this.menu), 1);

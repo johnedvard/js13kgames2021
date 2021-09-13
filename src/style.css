@@ -18,8 +18,11 @@ body {
 }
 #root {
   position: relative;
+  max-width: 98%;
+  max-height: 98%;
   background: var(--bg);
   overflow: hidden;
+  border: 3px solid var(--err);
 }
 canvas,
 #menu {
@@ -76,4 +79,7 @@ button {
 
 #spaceDesc.hide {
   display: none;
+}
+.loading {
+  background-color: gray;
 }

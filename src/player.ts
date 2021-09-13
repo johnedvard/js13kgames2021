@@ -129,8 +129,6 @@ class Player implements IGameObject {
   }
   renderTrail() {
     if (this.trails.length) {
-      this.ctx.save();
-      this.ctx.globalCompositeOperation = 'source-over';
       this.ctx.lineWidth = 3 * this.scale;
       this.ctx.beginPath();
       this.trails.forEach((segment, index) => {
@@ -150,7 +148,6 @@ class Player implements IGameObject {
           this.ctx.stroke();
         }
       });
-      this.ctx.restore();
     }
   }
   onStartTrace() {

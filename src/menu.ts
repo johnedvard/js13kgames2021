@@ -44,15 +44,21 @@ export class Menu implements IGameObject {
 
     const startgameEl = document.getElementById('startgame');
     startgameEl.addEventListener('click', (ev) => {
-      this.game.nearConnection.ready.then(() => {
-        this.game.nearConnection.setName(this.userName);
-        emit(GameEvent.startGame, {
-          spaceShipRenderIndices: this.spaceShips.map((ship) => {
-            return ship.spaceshipIndex;
-          }),
+      startgameEl.classList.add('loading');
+      startgameEl.innerHTML = 'Loading...';
+      startgameEl.setAttribute('disabled', 'true');
+      setTimeout(() => {
+        // tick to update UI first
+        this.game.nearConnection.ready.then(() => {
+          this.game.nearConnection.setName(this.userName);
+          emit(GameEvent.startGame, {
+            spaceShipRenderIndices: this.spaceShips.map((ship) => {
+              return ship.spaceshipIndex;
+            }),
+          });
+          this.menuEl.classList.add('out');
         });
-        this.menuEl.classList.add('out');
-      });
+      }, 50);
     });
 
     this.setSubscriptionTextVisibility(true);
