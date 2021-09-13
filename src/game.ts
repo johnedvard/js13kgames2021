@@ -30,7 +30,6 @@ export class Game {
   isGameOver = false;
   isGameStarted = false;
   nearConnection: NearConnection;
-  isLoading = false;
   constructor(canvas: HTMLCanvasElement) {
     this.initNear();
     this.canvas = canvas;
@@ -117,21 +116,17 @@ export class Game {
       initLoginLogout(nearConnection);
     });
   }
-  async onStartGame(props: { spaceShipRenderIndices: number[] }) {
-    this.isLoading = true;
-    await playSong();
-    this.isLoading = false;
+  onStartGame(props: { spaceShipRenderIndices: number[]; userName: string }) {
     this.isGameStarted = true;
     if (this.gos.includes(this.menu)) {
       this.gos.splice(this.gos.indexOf(this.menu), 1);
     }
-    const userName = await this.nearConnection.getName();
     [...Array(this.maxPlayers).keys()].forEach((id) => {
       const player = new Player(this, this.scale, {
         color:
           id > 0
             ? '#' + createColorFromName(this.extraPlayerNames[id - 1])
-            : '#' + createColorFromName(userName),
+            : '#' + createColorFromName(props.userName || 'No_Name'),
         isAi: false,
         spaceShipRenderIndex: props.spaceShipRenderIndices[id],
         playerId: id,
@@ -139,6 +134,20 @@ export class Game {
       this.players.push(player);
       this.gos.push(player);
     });
+    this.nearConnection
+      .getName()
+      .then((name) => {
+        this.setPlayerColor(name);
+      })
+      .catch(() => {
+        this.setPlayerColor('No_Name');
+      });
+    playSong();
+  }
+  setPlayerColor(name: string) {
+    if (this.players && this.players[0]) {
+      this.players[0].setColor('#' + createColorFromName(name));
+    }
   }
   onNewGame(props: any) {
     this.isGameOver = false;

@@ -55,6 +55,7 @@ export class Menu implements IGameObject {
             spaceShipRenderIndices: this.spaceShips.map((ship) => {
               return ship.spaceshipIndex;
             }),
+            userName: this.userName,
           });
           this.menuEl.classList.add('out');
         });

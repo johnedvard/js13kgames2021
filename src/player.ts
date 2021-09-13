@@ -85,7 +85,6 @@ class Player implements IGameObject {
       !this.game.isGameOver &&
       this.numBullets > 0
     ) {
-      console.log('shoot bullet');
       const x = this.sprite.x;
       const y = this.sprite.y;
       const rotation = this.sprite.rotation;
@@ -134,7 +133,7 @@ class Player implements IGameObject {
       this.trails.forEach((segment, index) => {
         if (!segment || !segment.length) return;
         this.ctx.moveTo(segment[0].x, segment[0].y);
-        this.ctx.strokeStyle = this.playerProps.color || '#000';
+        this.ctx.strokeStyle = this.sprite.color || '#000';
         segment.forEach((t) => {
           this.ctx.lineTo(t.x, t.y);
         });
@@ -267,6 +266,10 @@ class Player implements IGameObject {
     if (this.getEndTrail()) {
       return this.getEndTrail()[this.getEndTrail().length - 1];
     }
+  }
+  setColor(color: string) {
+    this.sprite.color = color;
+    this.spaceShip.sprite.color = color;
   }
   private resetStartPos() {
     this.spaceShip.sprite.x = getRandomPos(
