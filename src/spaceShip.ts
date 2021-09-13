@@ -1,10 +1,10 @@
 import { Sprite } from '../kontra/kontra';
 import { emit, on } from '../kontra/src/events';
-import { bindKeys, keyPressed } from '../kontra/src/keyboard';
+import { keyPressed } from '../kontra/src/keyboard';
 import KontraSprite from '../kontra/src/sprite';
-import { EngineParticleEffect } from './engineParticleEffect';
 import { Game } from './game';
 import { GameEvent } from './gameEvent';
+import { MonetizeEvent } from './monetizeEvent';
 import { PlayerState } from './playerState';
 import { spaceShipRenderers } from './spaceShipRenderers';
 
@@ -12,9 +12,11 @@ export class SpaceShip {
   sprite: Sprite;
   rightKey = 'right';
   leftKey = 'left';
+  weaponKey = 'up';
   spaceshipIndex = 0;
-  ships: any[] = spaceShipRenderers;
-  particleEffect: EngineParticleEffect;
+  ships: any[] = [...spaceShipRenderers];
+  rotating = false;
+  isSubscriber = false;
   constructor(
     private game: Game,
     private playerState: PlayerState,
@@ -24,12 +26,13 @@ export class SpaceShip {
       isPreview: boolean;
       leftKey?: string;
       rightKey?: string;
+      weaponKey?: string;
     }
   ) {
     this.rightKey = props.rightKey || this.rightKey;
     this.leftKey = props.leftKey || this.leftKey;
+    this.weaponKey = props.weaponKey || this.weaponKey;
     const spaceShip = this;
-    this.particleEffect = new EngineParticleEffect();
     const rotationSpeed = 5;
     const ship: any = KontraSprite({
       x: props.spriteProps.x,
@@ -41,53 +44,31 @@ export class SpaceShip {
       anchor: { x: 0.1, y: 0.5 },
       rotation: -Math.PI / 2,
       render: function () {
-        spaceShip.renderSpaceShip(this);
+        spaceShip.renderSpaceShip(this, spaceShip.isSubscriber);
       },
       update: function (dt: number) {
         if (keyPressed(spaceShip.leftKey)) {
           this.rotation -= rotationSpeed * dt;
-          emit(GameEvent.playerRotation, -1);
-        }
-        if (keyPressed(spaceShip.rightKey)) {
+          spaceShip.rotating = true;
+        } else if (keyPressed(spaceShip.rightKey)) {
           this.rotation += rotationSpeed * dt;
-          emit(GameEvent.playerRotation, 1);
-        }
-        if (
-          spaceShip.playerState === PlayerState.dead ||
-          spaceShip.playerState === PlayerState.idle
-        ) {
-          this.dx = this.dy = 0;
+          spaceShip.rotating = true;
+        } else {
+          spaceShip.rotating = false;
         }
         // move the ship forward in the direction it's facing
         this.x = this.x + this.dx * dt * Math.cos(this.rotation);
         this.y = this.y + this.dy * dt * Math.sin(this.rotation);
-        spaceShip.updateSpaceShip(dt);
       },
     });
     this.sprite = ship;
-    on(
-      GameEvent.playerStateChange,
-      (obj: { state: PlayerState; ship: SpaceShip }) =>
-        this.onPlayerStateChange(obj)
+    on(GameEvent.playerStateChange, (evt: any) =>
+      this.onPlayerStateChange(evt)
     );
-    if (!props.isPreview) {
-      this.handleInput();
-    }
+    on(MonetizeEvent.progress, () => this.onMonetizeProgress());
   }
-
-  handleInput() {
-    bindKeys(
-      'space',
-      (e) => {
-        if (
-          this.playerState !== PlayerState.tracing &&
-          this.playerState !== PlayerState.dead
-        ) {
-          emit(GameEvent.startTrace);
-        }
-      },
-      { handler: 'keyup' }
-    );
+  onMonetizeProgress() {
+    this.isSubscriber = true;
   }
 
   onPlayerStateChange(evt: { state: PlayerState; ship: SpaceShip }) {
@@ -96,14 +77,9 @@ export class SpaceShip {
     }
   }
 
-  updateSpaceShip = (dt: number) => {
-    this.particleEffect.updatePool();
-  };
-
-  renderSpaceShip(sprite: Sprite) {
+  renderSpaceShip(sprite: Sprite, isSubscriber = false) {
     if (this.playerState !== PlayerState.dead) {
-      spaceShipRenderers[this.spaceshipIndex](sprite);
+      spaceShipRenderers[this.spaceshipIndex](sprite, isSubscriber);
     }
-    this.particleEffect.render();
   }
 }

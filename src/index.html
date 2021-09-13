@@ -8,26 +8,65 @@
     <link rel="stylesheet" href="style.css" />
     <meta name="monetization" content="$ilp.uphold.com/Wb3kd4Jf3642" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdn.jsdelivr.net/npm/near-api-js@0.42.0/dist/near-api-js.min.js"></script>
+    <script src="https://js13kgames.com/src/near-api-js.js"></script>
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/drand-client/drand.js"
+    ></script>
   </head>
   <body>
     <div id="root">
       <div id="menu">
-        <span id="desc">Login to NEAR to get custom colored space ship</span>
+        <span id="desc"
+          >Login to NEAR to get your custom colored space ship based on your
+          name</span
+        >
         <input id="name" placeholder="enter name" />
-        <div id="arrowGroup">
-          <button id="leftArrow">&lt;</button>
-          <span id="spaceDesc"
-            >Available for
-            <a href="https://coil.com/" target="_blank">Coil Subscribers</a>
-            only</span
-          >
-          <button id="rightArrow">&gt;</button>
-        </div>
+        <div id="arrowGroup"></div>
+        <span id="spaceDesc"
+          >Some space ships are for
+          <a href="https://coil.com/" target="_blank">Coil Subscribers</a>
+          only</span
+        >
         <button id="loginout"></button>
         <button id="startgame">Start game</button>
       </div>
       <canvas id="game"></canvas>
     </div>
+    <script type="module">
+      import Client, {
+        HTTP,
+      } from 'https://cdn.jsdelivr.net/npm/drand-client/drand.js';
+
+      const chainHash =
+        '8990e7a9aaed2ffed73dbd7092123d6f289930540d7651336225dc172e51b2ce'; // (hex encoded)
+      const urls = [
+        'https://api.drand.sh',
+        'https://drand.cloudflare.com',
+        // ...
+      ];
+
+      export async function main() {
+        const options = { chainHash };
+
+        const client = await Client.wrap(
+          HTTP.forURLs(urls, chainHash),
+          options
+        );
+
+        // e.g. use the client to get the latest randomness round:
+        const res = await client.get();
+        const randomColor1 = res.randomness;
+        const randomColor2 = res.signature;
+        const randomColor3 = res.previous_signature;
+
+        const event = new CustomEvent('drand', {
+          detail: [randomColor1, randomColor2, randomColor3],
+        });
+        window.dispatchEvent(event);
+      }
+      main();
+    </script>
+    
   </body>
 </html>

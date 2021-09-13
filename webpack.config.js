@@ -24,7 +24,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Some game title',
+      title: 'Kurve Space',
       template: path.resolve(__dirname, 'src/index.html'),
     }),
     new CopyPlugin({

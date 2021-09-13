@@ -6,7 +6,9 @@
   "main": "index.ts",
   "scripts": {
     "start": "webpack serve",
-    "build": "webpack",
+    "build:zip": "zip dist/game.zip -r dist/index.html dist/bundle.js dist/style.css dist/assets",
+    "build": "webpack && npm run build:zip",
+    "build:roadroller": "webpack && roadroller dist/bundle.js -o dist/bundle.js && npm run build:zip",
     "build:kontra": "npm --prefix ./kontra/ run build",
     "near:login": "near login",
     "build:contract": "node contract/compile.js",
@@ -43,6 +45,7 @@
     "nodemon": "^2.0.12",
     "path-browserify": "^1.0.1",
     "rimraf": "^3.0.2",
+    "roadroller": "^2.0.0",
     "shelljs": "^0.8.4",
     "standard-version": "^9.3.1",
     "style-loader": "^3.2.1",

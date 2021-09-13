@@ -1,8 +1,6 @@
 import { Vector, Sprite } from '../kontra/kontra';
-import { emit } from '../kontra/src/events';
 import KontraVector from '../kontra/src/vector';
 import { Game } from './game';
-import { GameEvent } from './gameEvent';
 
 export const lineIntersection = (
   p1: Vector,
@@ -37,32 +35,6 @@ export const isOutOfBounds = (game: Game, go: Sprite): boolean => {
   );
 };
 
-/**
- * Check if player hits own trail
- */
-export const checkLineIntersection = (trails: any[], go: any): Vector => {
-  // TODO (johnedvard) move to another file
-  const points = [...trails, KontraVector(go.x, go.y)];
-  for (let i = 0; i < points.length - 3; i++) {
-    const point = points[i];
-    const point2 = points[i + 1];
-    const lastPoint = points[points.length - 2];
-    const lastPoint2 = points[points.length - 1];
-    if (point !== lastPoint && point2 !== lastPoint2) {
-      const intersection = lineIntersection(
-        point,
-        point2,
-        lastPoint,
-        lastPoint2
-      );
-      if (intersection) {
-        emit(GameEvent.hitTrail, { point: intersection, go });
-        return intersection;
-      }
-    }
-  }
-};
-
 export const createColorFromName = (name: string) => {
   let color = '000000';
   for (let i = 0; i < name.length; i++) {
@@ -75,4 +47,30 @@ export const createColorFromName = (name: string) => {
     } catch {}
   }
   return color;
+};
+
+export const getRandomPos = (widthOrHeight: number) => {
+  return 80 + Math.random() * (widthOrHeight - 160);
+};
+
+export const getPlayerControls = (playerId: number): string[] => {
+  let leftKey = 'left';
+  let rightKey = 'right';
+  let weaponKey = 'up';
+  if (playerId === 1) {
+    leftKey = 'q';
+    rightKey = 'w';
+    weaponKey = 'e';
+  }
+  if (playerId === 2) {
+    leftKey = 'v';
+    rightKey = 'b';
+    weaponKey = 'n';
+  }
+  if (playerId === 3) {
+    leftKey = 'i';
+    rightKey = 'o';
+    weaponKey = 'p';
+  }
+  return [leftKey, rightKey, weaponKey];
 };
