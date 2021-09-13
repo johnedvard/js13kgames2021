@@ -124,22 +124,21 @@ export class Game {
     this.isGameStarted = true;
     if (this.gos.includes(this.menu)) {
       this.gos.splice(this.gos.indexOf(this.menu), 1);
-      const userName = await this.nearConnection.getName();
-      [...Array(this.maxPlayers).keys()].forEach((id) => {
-        const player = new Player(this, this.scale, {
-          color:
-            id > 0
-              ? '#' + createColorFromName(this.extraPlayerNames[id - 1])
-              : '#' + createColorFromName(userName),
-          isAi: false,
-          spaceShipRenderIndex: props.spaceShipRenderIndices[id],
-          playerId: id,
-        });
-        this.players.push(player);
-        this.gos.push(player);
-      });
-    } else {
     }
+    const userName = await this.nearConnection.getName();
+    [...Array(this.maxPlayers).keys()].forEach((id) => {
+      const player = new Player(this, this.scale, {
+        color:
+          id > 0
+            ? '#' + createColorFromName(this.extraPlayerNames[id - 1])
+            : '#' + createColorFromName(userName),
+        isAi: false,
+        spaceShipRenderIndex: props.spaceShipRenderIndices[id],
+        playerId: id,
+      });
+      this.players.push(player);
+      this.gos.push(player);
+    });
   }
   onNewGame(props: any) {
     this.isGameOver = false;
