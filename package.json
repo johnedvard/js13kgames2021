@@ -7,7 +7,7 @@
   "scripts": {
     "start": "webpack serve",
     "build:zip": "zip dist/game.zip -r dist/index.html dist/bundle.js dist/style.css dist/assets",
-    "build": "webpack && npm run build:zip",
+    "build": "webpack",
     "build:roadroller": "webpack && roadroller dist/bundle.js -o dist/bundle.js && npm run build:zip",
     "build:kontra": "npm --prefix ./kontra/ run build",
     "near:login": "near login",
