@@ -1,13 +1,12 @@
-import { init } from './../kontra/src/core';
-import { bindKeys, initKeys } from './../kontra/src/keyboard';
-import { initPointer } from './../kontra/src/pointer';
-import GameLoop from './../kontra/src/gameLoop';
+import { init } from 'kontra';
+import { bindKeys, initKeys } from 'kontra';
+import { GameLoop, initPointer } from 'kontra';
 import { IGameObject } from './iGameobject';
 import { NearConnection } from './near/nearConnection';
 import { initLoginLogout } from './near/nearLogin';
 import { Player } from './player';
 import { Menu } from './menu';
-import { emit, on } from '../kontra/src/events';
+import { emit, on } from 'kontra';
 import { GameEvent } from './gameEvent';
 import { createColorFromName } from './gameUtils';
 import { PlayerState } from './playerState';
@@ -62,7 +61,7 @@ export class Game {
   handleGameInput() {
     bindKeys(
       'space',
-      (e) => {
+      (e: any) => {
         if (this.isGameOver) {
           emit(GameEvent.newGame, {});
         } else if (this.isGameStarted && !this.isGameOver) {
@@ -78,7 +77,7 @@ export class Game {
     );
     bindKeys(
       'm',
-      (e) => {
+      (e: any) => {
         toggleSond();
       },
       { handler: 'keyup' }
@@ -142,7 +141,7 @@ export class Game {
       .catch(() => {
         this.setPlayerColor('No_Name');
       });
-      playSong();
+    playSong();
   }
   setPlayerColor(name: string) {
     if (this.players && this.players[0]) {

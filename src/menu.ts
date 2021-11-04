@@ -1,7 +1,7 @@
 import { Game } from './game';
 import { IGameObject } from './iGameobject';
-import { Sprite } from '../kontra/kontra';
-import { emit, on } from '../kontra/src/events';
+import { Sprite } from 'kontra';
+import { emit, on } from 'kontra';
 import { createColorFromName, getPlayerControls } from './gameUtils';
 import { GameEvent } from './gameEvent';
 import { SpaceShip } from './spaceShip';

@@ -1,5 +1,5 @@
-import { Sprite } from '../kontra/kontra';
-import { on } from '../kontra/src/events';
+import { Sprite } from 'kontra';
+import { on } from 'kontra';
 import { Game } from './game';
 import { GameEvent } from './gameEvent';
 import { IGameObject } from './iGameobject';

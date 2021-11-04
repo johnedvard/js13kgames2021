@@ -1,7 +1,5 @@
-import { Sprite, Vector } from '../kontra/kontra';
-import { on } from '../kontra/src/events';
-import KontraSprite from '../kontra/src/sprite';
-import KontraVector from '../kontra/src/vector';
+import { Sprite, Vector } from 'kontra';
+import { on } from 'kontra';
 import { BulletState } from './BulletState';
 import { Game } from './game';
 import { GameEvent } from './gameEvent';
@@ -32,7 +30,7 @@ export class Bullet implements IGameObject {
     }
   ) {
     const bullet = this;
-    const kontraSprite: any = KontraSprite({
+    const kontraSprite: any = new Sprite({
       x: x + Math.cos(rotation) * this.startOffset,
       y: y + Math.sin(rotation) * this.startOffset,
       width: 10,
@@ -44,7 +42,7 @@ export class Bullet implements IGameObject {
       rotation: rotation,
       update: function (dt: number) {
         if (bullet.bulletState === BulletState.dead) return;
-        bullet.prevPoint = KontraVector(this.x, this.y);
+        bullet.prevPoint = new Vector(this.x, this.y);
         this.x = this.x + this.dx * dt * Math.cos(this.rotation);
         this.y = this.y + this.dy * dt * Math.sin(this.rotation);
       },

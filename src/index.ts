@@ -1,4 +1,4 @@
-import { emit } from '../kontra/src/events';
+import { emit } from 'kontra';
 import { Game } from './game';
 import { MonetizeEvent } from './monetizeEvent';
 

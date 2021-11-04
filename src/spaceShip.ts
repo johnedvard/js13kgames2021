@@ -1,7 +1,6 @@
-import { Sprite } from '../kontra/kontra';
-import { emit, on } from '../kontra/src/events';
-import { keyPressed } from '../kontra/src/keyboard';
-import KontraSprite from '../kontra/src/sprite';
+import { Sprite } from 'kontra';
+import { on } from 'kontra';
+import { keyPressed } from 'kontra';
 import { Game } from './game';
 import { GameEvent } from './gameEvent';
 import { MonetizeEvent } from './monetizeEvent';
@@ -34,7 +33,7 @@ export class SpaceShip {
     this.weaponKey = props.weaponKey || this.weaponKey;
     const spaceShip = this;
     const rotationSpeed = 5;
-    const ship: any = KontraSprite({
+    const ship: any = new Sprite({
       x: props.spriteProps.x,
       y: props.spriteProps.y,
       color: props.spriteProps.color || '#000',

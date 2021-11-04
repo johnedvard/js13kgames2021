@@ -1,6 +1,5 @@
-import { Sprite, Vector } from '../kontra/kontra';
-import { emit } from '../kontra/src/events';
-import KontraVector from '../kontra/src/vector';
+import { Sprite, Vector } from 'kontra';
+import { emit } from 'kontra';
 import { GameEvent } from './gameEvent';
 import { lineIntersection } from './gameUtils';
 import { Player } from './player';
@@ -20,7 +19,7 @@ export const addPlayer = (player: Player) => {
 export const checkLineIntersection = (goPoint: Vector, go: Sprite) => {
   if (!goPoint || !go) return;
   const lastPoint = goPoint;
-  const lastPoint2 = KontraVector(go.x, go.y);
+  const lastPoint2 = new Vector(go.x, go.y);
 
   playerTrails.forEach((trails, playerId) => {
     trails.forEach((lineSegment, segmentIndex) => {
@@ -31,7 +30,7 @@ export const checkLineIntersection = (goPoint: Vector, go: Sprite) => {
       ) {
         // Add player pos if last line segment
         points.push(
-          KontraVector(players[playerId].sprite.x, players[playerId].sprite.y)
+          new Vector(players[playerId].sprite.x, players[playerId].sprite.y)
         );
       }
       for (let i = 0; i < points.length - 1; i++) {

@@ -1,16 +1,15 @@
 import { IGameObject } from './iGameobject';
 import { PlayerState } from './playerState';
-import { emit, on } from '../kontra/src/events';
+import { emit, on } from 'kontra';
 import { GameEvent } from './gameEvent';
-import KontraVector from '../kontra/src/vector';
 import { Game } from './game';
 import { getPlayerControls, getRandomPos, isOutOfBounds } from './gameUtils';
-import { Vector, Sprite } from '../kontra/kontra';
+import { Vector, Sprite } from 'kontra';
 import { SpaceShip } from './spaceShip';
 import { MonetizeEvent } from './monetizeEvent';
 import { EngineParticleEffect } from './engineParticleEffect';
 import { addPlayer, checkLineIntersection, playerTrails } from './trails';
-import { bindKeys } from '../kontra/src/keyboard';
+import { bindKeys } from 'kontra';
 import { Bullet } from './bullet';
 
 class Player implements IGameObject {
@@ -121,7 +120,7 @@ class Player implements IGameObject {
     if (this.playerState === PlayerState.tracing) {
       this.timeSinceLastTrailAdded += dt;
       if (this.timeSinceLastTrailAdded >= this.timeToAddTrailInterval) {
-        this.getEndTrail().push(KontraVector(this.sprite.x, this.sprite.y));
+        this.getEndTrail().push(new Vector(this.sprite.x, this.sprite.y));
         this.timeSinceLastTrailAdded = 0;
       }
     }
@@ -153,7 +152,7 @@ class Player implements IGameObject {
     this.sprite.dx = this.speed;
     this.sprite.dy = this.speed;
     this.setPlayerState(PlayerState.tracing);
-    this.getEndTrail().push(KontraVector(this.sprite.x, this.sprite.y));
+    this.getEndTrail().push(new Vector(this.sprite.x, this.sprite.y));
   }
   onHitTrail({
     point,
@@ -175,7 +174,7 @@ class Player implements IGameObject {
     }
     if (!this.spaceShip.rotating) {
       // Add point to prevent alive player from dying right after being hit, but only if not rotating
-      this.getEndTrail().push(KontraVector(this.sprite.x, this.sprite.y));
+      this.getEndTrail().push(new Vector(this.sprite.x, this.sprite.y));
     }
     if (playerId === this.playerId) {
       this.splitLineSegment({ segmentIndex, trailIndex });
@@ -212,7 +211,7 @@ class Player implements IGameObject {
       this.playerState === PlayerState.tracing &&
       isOutOfBounds(this.game, this.sprite)
     ) {
-      const point: Vector = KontraVector(this.sprite.x, this.sprite.y);
+      const point: Vector = new Vector(this.sprite.x, this.sprite.y);
       emit(GameEvent.hitWall, {
         point: point,
         go: this.sprite,

@@ -1,4 +1,4 @@
-import { Sprite } from '../kontra/kontra';
+import { Sprite } from 'kontra';
 
 let spriteShipImg: HTMLImageElement;
 let spriteShipImg2: HTMLImageElement;

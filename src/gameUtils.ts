@@ -1,5 +1,4 @@
-import { Vector, Sprite } from '../kontra/kontra';
-import KontraVector from '../kontra/src/vector';
+import { Vector, Sprite } from 'kontra';
 import { Game } from './game';
 
 export const lineIntersection = (
@@ -16,7 +15,7 @@ export const lineIntersection = (
   if (v < 0.0 || v > 1.0) return null; // intersection point not between p3 and p4
   const intersectionX = p1.x + u * (p2.x - p1.x);
   const intersectionY = p1.y + u * (p2.y - p1.y);
-  let intersection: Vector = KontraVector(intersectionX, intersectionY);
+  let intersection: Vector = new Vector(intersectionX, intersectionY);
   return intersection;
 };
 

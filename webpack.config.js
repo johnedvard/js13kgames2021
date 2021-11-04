@@ -45,9 +45,6 @@ module.exports = {
     fallback: {
       path: require.resolve('path-browserify'),
     },
-    alias: {
-      kontra: path.resolve(__dirname, 'kontra'),
-    },
   },
   output: {
     filename: 'bundle.js',

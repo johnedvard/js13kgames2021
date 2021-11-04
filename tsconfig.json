@@ -12,6 +12,6 @@
     "lib": ["es2018", "dom"],
     "allowSyntheticDefaultImports": true
   },
-  "files": ["./kontra/kontra.d.ts", "src/modules.d.ts"],
-  "exclude": ["node_modules", "contract", "kontra"]
+  "files": ["src/modules.d.ts"],
+  "exclude": ["node_modules", "contract"]
 }
