@@ -2,7 +2,7 @@
 
 This game is inspired by Achtung, die Kurve!
 
-It's a 4 player local multiplayer game. You control a spaceship and need to stay alive as long as possible before there's no space to navigate. You die if you hit a player's trail or any of the walls. Each player has one bullet they can fire to clear some space.
+It's a 4 player local multiplayer game. You control a space ship and need to stay alive as long as possible before there's no space to navigate. You die if you hit a player's trail or any of the walls. Each player has one bullet they can fire to clear some space.
 
 ### Controls
 

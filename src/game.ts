@@ -142,7 +142,7 @@ export class Game {
       .catch(() => {
         this.setPlayerColor('No_Name');
       });
-    playSong();
+      playSong();
   }
   setPlayerColor(name: string) {
     if (this.players && this.players[0]) {
